@@ -1,0 +1,25 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                          manipulation_frame="{man_frame}"
+                                          host_name="{h_name}"
+                                          host_drink="{h_drink}"
+                                          current_guest="{n}"
+                                          attention_home="{attention_home}" />
+            <ReactiveFallback>
+                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
+                <Action ID="Pan" period="45.0" range="30" pitch_angle="-15"/>
+            </ReactiveFallback>
+            <Action ID="LookAt" tf_frame="{chair_frame}"/>
+            <Action ID="PointAt" tf_frame="{chair_frame}" 
+                                    base_frame="{man_frame}"
+                                    low_z="0.6"
+                                    high_z="0.9"/>
+            <Action ID="Speak" say_text="Please, sit over there"/> 
+            <Action ID="MoveToPredefined" pose="home"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+        </Sequence> 
+    </BehaviorTree>
+</root>

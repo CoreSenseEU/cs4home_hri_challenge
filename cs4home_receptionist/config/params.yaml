@@ -1,0 +1,76 @@
+receptionist_master:
+  ros__parameters:
+    flows: [flow_1]
+    flow_1: [greeting_guest_cognitive_module, move_to, describe_person_cognitive_module, find_seat_cognitive_module]
+    on_startup: [greeting_guest_cognitive_module]
+
+move_to:
+  ros__parameters:
+    core: execute_bt
+    efferent: transition_output
+    plugin_list:
+    - init_receptionist_bt_node
+    - move_to_bt_node
+    bt_name: 'move_to.xml'
+    on_success_transition: ['describe_person_cognitive_module']
+    transition_output:
+      topics: ['module_to_activate']
+      types: ['std_msgs/msg/String']
+
+greeting_guest_cognitive_module:
+  ros__parameters:
+    core: execute_bt
+    efferent: transition_output
+    plugin_list:
+    - init_receptionist_bt_node
+    - look_at_bt_node
+    - speak_bt_node
+    - is_detected_bt_node
+    - pan_bt_node
+    - filter_entity_bt_node
+    - extract_entity_color_bt_node
+    - listen_bt_node
+    - query_bt_node
+    - dialogConfirmation_bt_node
+    - store_detection_bt_node
+    - move_to_bt_node
+    bt_name: 'greeting_guest.xml'
+    on_success_transition: ['move_to']
+    transition_output:
+      topics: ['module_to_activate']
+      types: ['std_msgs/msg/String']
+
+find_seat_cognitive_module:
+  ros__parameters:
+    core: execute_bt
+    efferent: transition_output
+    plugin_list:
+    - init_receptionist_bt_node
+    - is_sittable_bt_node
+    - point_at_bt_node
+    - move_to_predefined_bt_node
+    - speak_bt_node
+    - is_detected_bt_node
+    - pan_bt_node
+    - look_at_bt_node
+    bt_name: 'find_seat.xml'
+    transition_output:
+      topics: ['module_to_activate']
+      types: ['std_msgs/msg/String']
+
+describe_person_cognitive_module:
+  ros__parameters:
+    core: execute_bt
+    efferent: transition_output
+    plugin_list:
+    - init_receptionist_bt_node
+    - is_detected_bt_node
+    - pan_bt_node
+    - look_at_bt_node
+    - speak_bt_node
+    - move_along_axis_bt_node
+    bt_name: 'describe_person.xml'
+    on_success_transition: ['find_seat_cognitive_module']
+    transition_output:
+      topics: ['module_to_activate']
+      types: ['std_msgs/msg/String']
