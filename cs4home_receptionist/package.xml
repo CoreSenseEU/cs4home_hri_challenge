@@ -9,6 +9,21 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>cs4home_core</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>rclcpp_components</depend>
+  <depend>rclcpp_cascade_lifecycle</depend>
+  <depend>behaviortree_cpp_v3</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>lifecycle_msgs</depend>
+  <depend>hri</depend>
+  <depend>motion</depend>
+  <depend>perception</depend>
+  <depend>attention_system</depend>
+  <depend>perception_system</depend>
+  <depend>nav2_behavior_tree</depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

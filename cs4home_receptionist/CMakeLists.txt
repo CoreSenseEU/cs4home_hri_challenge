@@ -7,9 +7,101 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(cs4home_core REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(rclcpp_cascade_lifecycle REQUIRED)
+find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+find_package(hri REQUIRED)
+find_package(motion REQUIRED)
+find_package(perception REQUIRED)
+find_package(attention_system REQUIRED)
+find_package(perception_system REQUIRED)
+find_package(nav2_behavior_tree REQUIRED)
+
+set(dependencies
+  cs4home_core
+  rclcpp
+  rclcpp_lifecycle
+  rclcpp_components
+  rclcpp_cascade_lifecycle
+  behaviortree_cpp_v3
+  ament_index_cpp
+  lifecycle_msgs
+  hri
+  motion
+  perception
+  attention_system
+  perception_system
+  nav2_behavior_tree
+  rclcpp_action
+)
+
+include_directories(
+  include
+)
+
+add_library(execute_bt SHARED
+  src/ExecuteBT.cpp
+)
+ament_target_dependencies(execute_bt ${dependencies})
+
+add_library(transition_output SHARED
+src/TransitionOutput.cpp
+)
+ament_target_dependencies(transition_output ${dependencies})
+
+add_executable(receptionist_master
+  src/ReceptionistMaster.cpp
+)
+ament_target_dependencies(receptionist_master ${dependencies})
+
+add_executable(describe_person_cognitive_module
+  src/DescribePersonCM.cpp
+)
+ament_target_dependencies(describe_person_cognitive_module ${dependencies})
+
+add_executable(find_seat_cognitive_module
+  src/FindSeatCM.cpp
+)
+ament_target_dependencies(find_seat_cognitive_module ${dependencies})
+
+add_executable(greeting_guest_cognitive_module
+  src/GreetingGuestCM.cpp
+)
+ament_target_dependencies(greeting_guest_cognitive_module ${dependencies})
+
+
+install(TARGETS
+  execute_bt
+  transition_output
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(TARGETS
+  receptionist_master
+  find_seat_cognitive_module
+  greeting_guest_cognitive_module
+  describe_person_cognitive_module
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  launch
+  bt_xml
+  config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY include/
+  DESTINATION include
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -22,5 +114,9 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_include_directories(include)
+ament_export_libraries(execute_bt)
+ament_export_dependencies(${dependencies})
 
 ament_package()
