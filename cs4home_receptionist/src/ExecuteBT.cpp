@@ -81,7 +81,7 @@ public:
       }
     }
     std::string pkgpath =
-    ament_index_cpp::get_package_share_directory("cs4home_help_me_carry");
+    ament_index_cpp::get_package_share_directory("cs4home_receptionist");
     std::string xml_file = pkgpath + "/bt_xml/" + bt_name_;
     
     cascade_node_ =

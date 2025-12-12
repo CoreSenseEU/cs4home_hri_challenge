@@ -41,9 +41,6 @@ set(dependencies
   rclcpp_action
 )
 
-include_directories(
-  include
-)
 
 add_library(execute_bt SHARED
   src/ExecuteBT.cpp
@@ -99,9 +96,6 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY include/
-  DESTINATION include
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

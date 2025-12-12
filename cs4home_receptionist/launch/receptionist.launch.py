@@ -65,7 +65,7 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(declare_namespace_cmd)
     ld.add_action(receptionist_master)
-    ld.add_action(move_to_node)
+    #ld.add_action(move_to_node)
     ld.add_action(find_seat_node)
     ld.add_action(greeting_guest_node)
     ld.add_action(describe_person_node)
