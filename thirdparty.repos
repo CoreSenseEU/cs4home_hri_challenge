@@ -1,0 +1,93 @@
+repositories:
+  thirdparty/pointcloud_to_laserscan:
+    type: git
+    url: https://github.com/Juancams/pointcloud_to_laserscan.git
+    version: humble
+  thirdparty/small_objects_detector:
+    type: git
+    url: https://github.com/gentlebots/small_objects_detector.git
+    version: robocup
+  thirdparty/audio_common:
+    type: git
+    url: https://github.com/mgonzs13/audio_common.git
+    version: main
+  thirdparty/whisper_ros:
+    type: git
+    url: https://github.com/mgonzs13/whisper_ros.git
+    version: main
+  thirdparty/llama_ros:
+    type: git
+    url: https://github.com/mgonzs13/llama_ros.git
+    version: main
+  thirdparty/moveit_task_constructor:
+    type: git
+    url: https://github.com/juandpenan/moveit_task_constructor.git
+    version: humble
+  thirdparty/tiago_mtc_examples:
+    type: git
+    url: https://github.com/juandpenan/tiago_mtc_examples.git
+    version: main
+  thirdparty/yolo_ros:
+    type: git
+    url: https://github.com/igonzf/yolo_ros.git
+    version: robocup24
+  thirdparty/rclcpp_cascade_lifecycle:
+    type: git
+    url: https://github.com/fmrico/cascade_lifecycle.git
+    version: ad2e905fc4bebcb436af177f35685bf60e821cdc
+  thirdparty/tts_ros:
+    type: git
+    url: https://github.com/mgonzs13/tts_ros
+    version: main
+  thirdparty/slam_toolbox:
+    type: git
+    url: https://github.com/SteveMacenski/slam_toolbox.git
+    version: 0e5df90d51b5346e2c1be8b42dd59b3a4271eb67
+  thirdparty/tiago_robot:
+    type: git
+    url: https://github.com/juandpenan/tiago_robot.git 
+    version: steamdeck
+  thirdparty/gpd:
+    type: git
+    url: https://github.com/atenpas/gpd.git
+    version: master
+  thirdparty/manipulation_server:
+    type: git
+    url: https://github.com/juandpenan/manipulation_server.git
+    version: main
+  thirdparty/perception_system:
+    type: git
+    url: https://github.com/igonzf/perception_system.git
+    version: main
+  thirdparty/attention_system:
+    type: git
+    url: https://github.com/aaggj/attention_system
+    version: humble
+  thirdparty/navigation_system:
+    type: git
+    url: https://github.com/juandpenan/navigation_system.git
+    version: main
+  thirdparty/gpsr_planning:
+    type: git
+    url: https://github.com/igonzf/GPSR_planning
+    version: main
+  thirdparty/robocup24:
+    type: git
+    url: https://github.com/CoreSenseEU/CoreSense4Home.git
+    version: humble-devel
+  thirdparty/knowledge_core:
+    type: git
+    url: https://github.com/severin-lemaignan/knowledge_core.git
+    version: humble-devel
+  thirdparty/kb_msgs:
+    type: git
+    url: https://github.com/pal-robotics/kb_msgs.git
+    version: main
+  thirdparty/openrobots-ontology:
+    type: git
+    url: https://github.com/severin-lemaignan/openrobots-ontology.git
+    version: humble-devel
+
+    
+
+    
