@@ -12,7 +12,7 @@
             <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
             <Action ID="Speak" say_text="Hi, this is Gentlebot. I'm ready to receive a new guest"/> 
             <RetryUntilSuccessful num_attempts="-1">
-                <Fallback>
+                <!-- <Fallback>
                     <Timeout msec="2000">
                         <ReactiveFallback>                                
                             <Condition ID="IsDetected" confidence="0.6"
@@ -30,7 +30,20 @@
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>
                     </Delay>
-                </Fallback>
+                </Fallback> -->
+                <Sequence>
+                    <Action ID="Pan" pitch_angle="20"/>
+                    <Delay delay_msec="3000">
+                        <Condition ID="IsDetected"
+                                confidence="0.6"
+                                interest="person"
+                                frames=""
+                                max_depth="2"
+                                max_entities="1"
+                                order="depth_nearest"/>
+                    </Delay>
+
+                </Sequence>
             </RetryUntilSuccessful>
             <RetryUntilSuccessful num_attempts="-1">
                 <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
@@ -147,6 +160,9 @@
                     <Action ID="Speak" say_text="So, " param="{description}"/>
                 </Sequence>
             </RetryUntilSuccessful>
+            <Action ID="StoreGuestInfo" guest_name="{name_value}"
+                                        guest_description="{description}"
+                                        guest_drink="{drink_value}"/>
             <!--
             <Action ID="StoreDetection" current_name="{name_value}"
                                         guest_description="{description}"
