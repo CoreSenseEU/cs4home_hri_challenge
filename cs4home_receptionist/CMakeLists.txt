@@ -22,6 +22,7 @@ find_package(perception REQUIRED)
 find_package(attention_system REQUIRED)
 find_package(perception_system REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
+find_package(kb_msgs REQUIRED)
 
 set(dependencies
   cs4home_core
@@ -39,6 +40,7 @@ set(dependencies
   perception_system
   nav2_behavior_tree
   rclcpp_action
+  kb_msgs
 )
 
 
@@ -61,6 +63,11 @@ add_executable(describe_person_cognitive_module
   src/DescribePersonCM.cpp
 )
 ament_target_dependencies(describe_person_cognitive_module ${dependencies})
+
+add_executable(introduce_guest_cognitive_module
+  src/IntroduceGuestCM.cpp
+)
+ament_target_dependencies(introduce_guest_cognitive_module ${dependencies})
 
 add_executable(find_seat_cognitive_module
   src/FindSeatCM.cpp

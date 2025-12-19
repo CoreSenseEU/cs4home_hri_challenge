@@ -39,7 +39,10 @@
 
                 </Sequence>
             </RetryUntilSuccessful>
+            <Action ID="GetAttendedGuest"
+                    guest_attended="{guest_attending}"/>
             <Action ID="GetGuestInfo"
+                    guest_attending_id="{guest_attending}"
                     guest_name="{guest_name}"
                     guest_drink="{guest_drink}"
                     guest_description="{guest_description}"/>

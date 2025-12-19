@@ -20,6 +20,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "kb_msgs/srv/query.hpp"
 #include <map>
 #include <memory>
 
@@ -102,9 +103,22 @@ private:
   
   std::map<std::string, rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr> lifecycle_clients_;
   rclcpp::TimerBase::SharedPtr management_timer_;
+
+  rclcpp::Client<kb_msgs::srv::Query>::SharedPtr query_client_;
   
   void activate_module(const std_msgs::msg::String::SharedPtr msg) {
     auto next_node_ = msg->data;
+
+    kb_msgs::srv::Query::Request::SharedPtr request =
+      std::make_shared<kb_msgs::srv::Query::Request>();
+    request->patterns.push_back("robot1 oro:attends ?guest");
+    request->vars.push_back("?guest");  
+
+    auto response = query_client_->async_send_request(request).get();
+
+    if(next_node_ == "find_seat_cognitive_module" && !response->json.empty()) {
+      next_node_ = "introduce_guest_cognitive_module";
+    }
     
     RCLCPP_INFO(this->get_logger(), "Master received next transition: %s",
                next_node_);

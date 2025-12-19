@@ -64,6 +64,7 @@ find_seat_cognitive_module:
     - pan_bt_node
     - look_at_bt_node
     bt_name: 'find_seat.xml'
+    on_success_transition: ['greeting_guest_cognitive_module']
     transition_output:
       topics: ['module_to_activate']
       types: ['std_msgs/msg/String']
@@ -86,7 +87,28 @@ describe_person_cognitive_module:
     - move_along_axis_bt_node
     - get_guest_info_bt_node
     - move_to_bt_node
+    - get_attended_guest_bt_node
     bt_name: 'describe_person.xml'
+    on_success_transition: ['find_seat_cognitive_module']
+    transition_output:
+      topics: ['module_to_activate']
+      types: ['std_msgs/msg/String']
+    waypoints_names: ["entrance", "party", "guest_confirmation"]
+    waypoints: # [x, y, yaw] only 3 numbers!!
+      entrance: [1.175, 6.833, 1.350]
+      party: [1.215, 4.201, 0.002]
+      guest_confirmation: [1.256, 3.978, 0.003]
+
+introduce_guest_cognitive_module:
+  ros__parameters:
+    core: execute_bt
+    efferent: transition_output
+    plugin_list:
+    - init_receptionist_bt_node
+    - speak_bt_node
+    - get_guest_info_bt_node
+    - get_attended_guest_bt_node
+    bt_name: 'introduce_guest.xml'
     on_success_transition: ['find_seat_cognitive_module']
     transition_output:
       topics: ['module_to_activate']
