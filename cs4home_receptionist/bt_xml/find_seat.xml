@@ -12,6 +12,8 @@
             <!-- <Action ID="LookAt" tf_frame="{attention_home}"/> -->
             <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/> -->
             <!-- <ReactiveFallback> -->
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Action ID="Speak" say_text="I'll find you a seat"/>
             <RetryUntilSuccessful num_attempts="-1">
                 
                     
@@ -25,10 +27,10 @@
             </RetryUntilSuccessful>
             <!-- </ReactiveFallback> -->
             <Action ID="LookAt" tf_frame="{chair_frame}"/>
-            <!-- <Action ID="PointAt" tf_frame="{chair_frame}" 
-                                    base_frame="{man_frame}"
+            <Action ID="PointAt" tf_frame="{chair_frame}" 
+                                    base_frame="base_link"
                                     low_z="0.6"
-                                    high_z="0.9"/> -->
+                                    high_z="0.9"/>
             <Action ID="Speak" say_text="Please, sit over there"/> 
             <!-- <Action ID="MoveToPredefined" pose="home"/>
             <Action ID="LookAt" tf_frame="{attention_home}"/> -->
