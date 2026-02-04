@@ -1,0 +1,24 @@
+#include "cs4home_core/CognitiveModule.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+class GrabBagCM : public cs4home_core::CognitiveModule {
+public:
+  explicit GrabBagCM(
+      const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
+      : cs4home_core::CognitiveModule("grab_bag_cognitive_module", options) {
+
+    this->declare_parameter<std::vector<std::string>>("plugin_list");
+    this->declare_parameter<std::string>("bt_name");
+    this->declare_parameter<std::vector<std::string>>("on_success_transition", {""});
+    RCLCPP_INFO(this->get_logger(), "GrabBagCM initialized");
+  }
+};
+
+int main(int argc, char **argv) {
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<GrabBagCM>();
+  rclcpp::spin(node->get_node_base_interface());
+  rclcpp::shutdown();
+  return 0;
+}

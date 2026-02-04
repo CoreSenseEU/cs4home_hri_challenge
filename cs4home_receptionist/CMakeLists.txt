@@ -72,6 +72,16 @@ add_executable(greeting_guest_cognitive_module
 )
 ament_target_dependencies(greeting_guest_cognitive_module ${dependencies})
 
+add_executable(grab_bag_cognitive_module
+  src/GrabBagCM.cpp
+)
+ament_target_dependencies(grab_bag_cognitive_module ${dependencies})
+
+add_executable(transport_bag_cognitive_module
+  src/TransportBagCM.cpp
+)
+ament_target_dependencies(transport_bag_cognitive_module ${dependencies})
+
 
 install(TARGETS
   execute_bt
@@ -86,6 +96,8 @@ install(TARGETS
   find_seat_cognitive_module
   greeting_guest_cognitive_module
   describe_person_cognitive_module
+  grab_bag_cognitive_module
+  transport_bag_cognitive_module
   DESTINATION lib/${PROJECT_NAME}
 )
 

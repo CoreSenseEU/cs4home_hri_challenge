@@ -52,6 +52,24 @@ def generate_launch_description():
         parameters=[params_file]
     )
 
+    grab_bag_node = Node(
+        package='cs4home_receptionist',
+        executable='grab_bag_cognitive_module',
+        name='grab_bag_cognitive_module',
+        namespace=namespace,
+        output='screen',
+        parameters=[params_file]
+    )
+
+    transport_bag_node = Node(
+        package='cs4home_receptionist',
+        executable='transport_bag_cognitive_module',
+        name='transport_bag_cognitive_module',
+        namespace=namespace,
+        output='screen',
+        parameters=[params_file]
+    )
+
     receptionist_master = Node(
         package='cs4home_receptionist',
         executable='receptionist_master',
@@ -69,4 +87,6 @@ def generate_launch_description():
     ld.add_action(find_seat_node)
     ld.add_action(greeting_guest_node)
     ld.add_action(describe_person_node)
+    ld.add_action(grab_bag_node)
+    ld.add_action(transport_bag_node)
     return ld
