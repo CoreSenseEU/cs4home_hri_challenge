@@ -20,8 +20,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "kb_msgs/srv/query.hpp"
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 
 using namespace std::chrono_literals;
 using namespace std::placeholders;
@@ -102,15 +104,72 @@ private:
   
   std::map<std::string, rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr> lifecycle_clients_;
   rclcpp::TimerBase::SharedPtr management_timer_;
+
+  rclcpp::Client< kb_msgs::srv::Query>::SharedPtr kb_query_client_;
+  bool handled_bag_ = false;
+  int guests_count_ = 0;
   
   void activate_module(const std_msgs::msg::String::SharedPtr msg) {
-    auto next_node_ = msg->data;
-    
-    RCLCPP_INFO(this->get_logger(), "Master received next transition: %s",
-               next_node_);
-    activate_node(next_node_);
-    
+    const std::string requested = msg->data;
+
+    if (!kb_query_client_) {
+      kb_query_client_ = this->create_client<kb_msgs::srv::Query>("/kb/query");
+    }
+
+    if (!kb_query_client_->service_is_ready()) {
+      RCLCPP_WARN(this->get_logger(), "KB query service not ready. Activating requested module directly: %s",
+                  requested.c_str());
+      activate_node(requested);
+      return;
+    }
+
+    auto request = std::make_shared<kb_msgs::srv::Query::Request>();
+    request->patterns = {"?guest rdf:type oro:Person"};
+    request->vars = {"?guest"};
+
+    using SharedFuture = rclcpp::Client<kb_msgs::srv::Query>::SharedFuture;
+
+    kb_query_client_->async_send_request(
+      request,
+      [this, requested](SharedFuture future) {
+        int n = 0;
+
+        auto result = future.get();
+        if (!result->success) {
+          RCLCPP_ERROR(this->get_logger(), "KB query failed: %s", result->error_msg.c_str());
+          activate_node(requested);
+          return;
+        }
+
+        try {
+          auto j = nlohmann::json::parse(result->json);
+          n = j.is_array() ? static_cast<int>(j.size()) : 0;
+        } catch (...) {
+          RCLCPP_ERROR(this->get_logger(), "Failed to parse KB json: %s", result->json.c_str());
+          activate_node(requested);
+          return;
+        }
+
+        guests_count_ = n;
+        RCLCPP_INFO(this->get_logger(), "Found %d guests", n);
+
+        std::string next_node = requested;
+
+        if (requested == "describe_person_cognitive_module" && n > 1 && !handled_bag_) {
+          RCLCPP_INFO(this->get_logger(), "Multiple guests detected, switching to grab_bag_cognitive_module.");
+          next_node = "grab_bag_cognitive_module";
+          handled_bag_ = true;
+        } else if (requested == "find_seat_cognitive_module" && n > 1) {
+          RCLCPP_INFO(this->get_logger(), "Multiple guests detected, switching to transport_bag_cognitive_module.");
+          next_node = "transport_bag_cognitive_module";
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Master activating node: %s", next_node.c_str());
+        activate_node(next_node);
+      }
+    );
   }
+
 
   void create_lifecycle_client(const std::string& node_name) {
     std::string service_name = "/" + node_name + "/change_state";
