@@ -87,6 +87,7 @@ describe_person_cognitive_module:
     - move_along_axis_bt_node
     - get_guest_info_bt_node
     - move_to_bt_node
+    - get_attended_guest_bt_node
     bt_name: 'describe_person.xml'
     on_success_transition: ['find_seat_cognitive_module']
     transition_output:
