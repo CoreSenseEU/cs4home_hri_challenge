@@ -1,7 +1,24 @@
 <root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="Sleep" time="1.0"/>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                          manipulation_frame="{man_frame}"
+                                          host_name="{h_name}"
+                                          host_drink="{h_drink}"
+                                          current_guest="{n}"
+                                          attention_home="{attention_home}" />
+            <Action ID="GetAttendedGuest"
+                    guest_attended="{guest_attending}"/>
+            <Action ID="GetGuestInfo"
+                    guest_attending_id="{guest_attending}"
+                    guest_attending="false"
+                    guest_name="{guest_name}"
+                    guest_drink="{guest_drink}"
+                    guest_description="{guest_description}"/>
+            <Action ID="Speak" say_text="An the other guest is" param="{guest_name}, "/>
+            <Action ID="Speak" say_text=" " param="{guest_description}"/>
+            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
         </Sequence> 
     </BehaviorTree>
 </root>

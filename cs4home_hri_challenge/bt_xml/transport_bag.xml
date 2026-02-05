@@ -1,7 +1,63 @@
 <root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="Sleep" time="1.0"/>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                          manipulation_frame="{man_frame}"
+                                          host_name="{h_name}"
+                                          host_drink="{h_drink}"
+                                          current_guest="{n}"
+                                          attention_home="{attention_home}" 
+                                          /> 
+            <Action ID="Speak" param="{h_name}" say_text=""/>
+            <Action ID="Speak" param="" say_text="Where do you want to drop the bag?"/>
+            <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end "/>
+            <!-- <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Fallback>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" 
+                                                        confidence="0.6" 
+                                                        person_id="{person_id}"
+                                                        interest="person"
+                                                        max_depth="3.0" 
+                                                        max_entities="2"
+                                                        order="depth"/>
+                            </RetryUntilSuccessful>
+                            <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
+                            <Action ID="LookAt" tf_frame="person_0_filtered"/>
+
+                            <Condition ID="IsEntityMoving" distance_tolerance="0.6"
+                                                        robot_distance_to_person="1.5"
+                                                        frame="person_0_filtered"
+                                                        check_time="8.0"/>
+                            <Action ID="FollowEntity" camera_frame="head_front_camera_optical_frame"
+                                                    distance_tolerance="0.2"
+                                                    frame_to_follow="person_0_filtered"
+                                                    x_axis_max="{max_x}"
+                                                    x_axis_min="{min_x}"
+                                                    y_axis_max="{max_y}"
+                                                    y_axis_min="{min_y}"/>
+                        </ReactiveSequence>
+                        <Action ID="Speak" param="" say_text="have we arrived to the destination?"/>
+                    </Fallback>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" confidence="0.3" person_id="{person_id}" interest="person" max_depth="2.5" max_entities="1" order="color"/>
+                        </RetryUntilSuccessful>
+                        <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
+                        <Action ID="LookAt" tf_frame="person_0_filtered"/>
+                        <ForceSuccess>
+                            <Action ID="GoalPublisher" 
+                            camera_frame="head_front_camera_optical_frame"
+                            distance_tolerance="0.2"
+                            frame_to_follow="person_0_filtered"/>  
+                        </ForceSuccess>
+                        <Action ID="DialogConfirmation"/>
+                    </ReactiveSequence>
+                </Sequence>
+            </RetryUntilSuccessful> -->
         </Sequence> 
     </BehaviorTree>
 </root>
