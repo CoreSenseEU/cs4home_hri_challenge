@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(cs4home_receptionist)
+project(cs4home_hri_challenge)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -54,10 +54,10 @@ src/TransitionOutput.cpp
 )
 ament_target_dependencies(transition_output ${dependencies})
 
-add_executable(receptionist_master
-  src/ReceptionistMaster.cpp
+add_executable(hri_challenge_master
+  src/HRIChallengeMaster.cpp
 )
-ament_target_dependencies(receptionist_master ${dependencies})
+ament_target_dependencies(hri_challenge_master ${dependencies})
 
 add_executable(describe_person_cognitive_module
   src/DescribePersonCM.cpp
@@ -99,7 +99,7 @@ install(TARGETS
 )
 
 install(TARGETS
-  receptionist_master
+  hri_challenge_master
   find_seat_cognitive_module
   greeting_guest_cognitive_module
   describe_person_cognitive_module
@@ -117,15 +117,20 @@ install(DIRECTORY
 
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_gtest REQUIRED)
+  
+  # Add test for sequential state machine
+  ament_add_gtest(test_sequential_state_machine test/test_sequential_state_machine.cpp)
+  target_link_libraries(test_sequential_state_machine ${rclcpp_LIBRARIES})
+  target_include_directories(test_sequential_state_machine PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(test_sequential_state_machine
+    rclcpp
+    lifecycle_msgs
+    std_msgs
+  )
 endif()
 
 ament_export_include_directories(include)

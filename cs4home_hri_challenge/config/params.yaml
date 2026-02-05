@@ -1,30 +1,16 @@
-receptionist_master:
+hri_challenge_master:
   ros__parameters:
     flows: [flow_1]
-    #flow_1: [find_seat_cognitive_module]
     flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module, grab_bag_cognitive_module, transport_bag_cognitive_module]
-    on_startup: [greeting_guest_cognitive_module]
-    
+    on_startup: [greeting_guest_cognitive_module]  # Node auto-activates from launch file
 
-# move_to:
-#   ros__parameters:
-#     core: execute_bt
-#     efferent: transition_output
-#     plugin_list:
-#     - init_receptionist_bt_node
-#     - move_to_bt_node
-#     bt_name: 'move_to.xml'
-#     on_success_transition: ['describe_person_cognitive_module']
-#     transition_output:
-#       topics: ['module_to_activate']
-#       types: ['std_msgs/msg/String']
 
 greeting_guest_cognitive_module:
   ros__parameters:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    - init_receptionist_bt_node
+    # - init_hri_challenge_bt_node
     - look_at_bt_node
     - speak_bt_node
     - is_detected_bt_node
@@ -38,11 +24,12 @@ greeting_guest_cognitive_module:
     - move_to_bt_node
     - check_policy_bt_node
     - store_guest_info_bt_node
+    - sleep_bt_node
     bt_name: 'greeting_guest.xml'
-    on_success_transition: ['describe_person_cognitive_module']
+    # New completion topic for flow management
     transition_output:
-      topics: ['module_to_activate']
-      types: ['std_msgs/msg/String']
+      topics: ['greeting_guest_cognitive_module/completion']
+      types: ['std_msgs/msg/Bool']
     waypoints_names: ["entrance", "party", "guest_confirmation"]
     waypoints: # [x, y, yaw] only 3 numbers!!
       entrance: [1.175, 6.833, 1.350]
@@ -54,7 +41,7 @@ find_seat_cognitive_module:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    - init_receptionist_bt_node
+    # - init_hri_challenge_bt_node
     - move_to_bt_node
     - is_sittable_bt_node
     - point_at_bt_node
@@ -63,11 +50,11 @@ find_seat_cognitive_module:
     - is_detected_bt_node
     - pan_bt_node
     - look_at_bt_node
+    - sleep_bt_node
     bt_name: 'find_seat.xml'
-    on_success_transition: ['greeting_guest_cognitive_module']
     transition_output:
-      topics: ['module_to_activate']
-      types: ['std_msgs/msg/String']
+      topics: ['find_seat_cognitive_module/completion']
+      types: ['std_msgs/msg/Bool']
     waypoints_names: ["entrance", "party", "guest_confirmation"]
     waypoints: # [x, y, yaw] only 3 numbers!!
       entrance: [1.175, 6.833, 1.350]
@@ -79,7 +66,7 @@ describe_person_cognitive_module:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    - init_receptionist_bt_node
+    # - init_hri_challenge_bt_node
     - is_detected_bt_node
     - pan_bt_node
     - look_at_bt_node
@@ -88,11 +75,11 @@ describe_person_cognitive_module:
     - get_guest_info_bt_node
     - move_to_bt_node
     - get_attended_guest_bt_node
+    - sleep_bt_node
     bt_name: 'describe_person.xml'
-    on_success_transition: ['find_seat_cognitive_module']
     transition_output:
-      topics: ['module_to_activate']
-      types: ['std_msgs/msg/String']
+      topics: ['describe_person_cognitive_module/completion']
+      types: ['std_msgs/msg/Bool']
     waypoints_names: ["entrance", "party", "guest_confirmation"]
     waypoints: # [x, y, yaw] only 3 numbers!!
       entrance: [1.175, 6.833, 1.350]
@@ -109,18 +96,18 @@ grab_bag_cognitive_module:
     - look_at_bt_node
     - speak_bt_node
     - is_detected_bt_node
+    - sleep_bt_node
     bt_name: 'grab_bag.xml'
-    on_success_transition: ['describe_person_cognitive_module']
     transition_output:
-      topics: ['module_to_activate']
-      types: ['std_msgs/msg/String']
+      topics: ['grab_bag_cognitive_module/completion']
+      types: ['std_msgs/msg/Bool']
 
 transport_bag_cognitive_module:
   ros__parameters:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    - init_receptionist_bt_node
+    # - init_hri_challenge_bt_node
     - is_detected_bt_node
     - filter_entity_bt_node
     - look_at_bt_node
@@ -130,7 +117,8 @@ transport_bag_cognitive_module:
     - dialogConfirmation_bt_node
     - speak_bt_node
     - move_to_bt_node
+    - sleep_bt_node
     bt_name: 'transport_bag.xml'
     transition_output:
-      topics: ['module_to_activate']
-      types: ['std_msgs/msg/String']
+      topics: ['transport_bag_cognitive_module/completion']
+      types: ['std_msgs/msg/Bool']

@@ -1,6 +1,6 @@
-# cs4home_recepcionist
+# cs4home_hri_challenge
 
-Receptionist cognitive module for the CoreSense4Home (RoboCup @Home) stack. It orchestrates the greeting of a person at the entrance of the house, inviting them inside and offering them a seat. It also provides voice feedback via TTS. The launch file starts:
+HRI Challenge cognitive module for the CoreSense4Home (RoboCup @Home) stack. It orchestrates the greeting of a person at the entrance of the house, inviting them inside and offering them a seat. It also provides voice feedback via TTS. The launch file starts:
 - greeting_guest_cognitive_module (this package)
 - audio player (audio_common)
 - text-to-speech node (tts_ros)
@@ -20,13 +20,13 @@ cd robocup24_ws/src
 ## 3. Clone core stack 
 Clone the  repository 
 ```bash
-git clone https://github.com/CoreSenseEU/cs4home_receptionist.git
+git clone https://github.com/CoreSenseEU/cs4home_hri_challenge.git
 ```
 
 ## 4. Import third‑party repositories
 This package ships a `thirdparty.repos` manifest you can feed into `vcs` to pull additional sources:
 ```bash
-vcs import --recursive < cs4home_receptionist/thirdparty.repos
+vcs import --recursive < cs4home_hri_challenge/thirdparty.repos
 ```
 
 ## 5. Install system & ROS package dependencies
@@ -54,15 +54,15 @@ source install/setup.bash
 ```
 Add the above line to your shell rc file for convenience.
 
-## 10. Launch receptionist
+## 10. Launch HRI Challenge
 
 Launch dependencies
 ```bash
-ros2 launch robocup_bringup receptionist_dependencies.launch.py
+ros2 launch robocup_bringup hri_challenge_dependencies.launch.py
 ```
-Launch receptionist
+Launch HRI Challenge
 ```bash
-ros2 launch cs4home_receptionist receptionist.launch.py
+ros2 launch cs4home_hri_challenge hri_challenge.launch.py
 ```
 
 

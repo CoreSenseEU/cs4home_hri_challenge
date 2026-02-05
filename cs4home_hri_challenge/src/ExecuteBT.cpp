@@ -23,6 +23,7 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/bool.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
@@ -60,17 +61,6 @@ public:
     std::vector<std::string> plugin_list;
     parent_->get_parameter("plugin_list", plugin_list);
     parent_->get_parameter("bt_name", bt_name_);
-    try {
-      parent_->get_parameter("on_success_transition", on_success_transition_);
-    } catch (const rclcpp::exceptions::ParameterNotDeclaredException &e) {
-      RCLCPP_WARN(parent_->get_logger(),
-            "Parameter 'on_success_transition' not set. If this is not the last BT be careful and set one.");
-      on_success_transition_.clear();
-    } catch (const std::exception &e) {
-      RCLCPP_WARN(parent_->get_logger(),
-            "Error getting parameter 'on_success_transition': %s", e.what());
-      on_success_transition_.clear();
-    }
 
     for (const auto &plugin : plugin_list) {
       try {
@@ -81,13 +71,20 @@ public:
       }
     }
     std::string pkgpath =
-    ament_index_cpp::get_package_share_directory("cs4home_receptionist");
+    ament_index_cpp::get_package_share_directory("cs4home_hri_challenge");
     std::string xml_file = pkgpath + "/bt_xml/" + bt_name_;
     
-    cascade_node_ =
-    std::make_shared<rclcpp_cascade_lifecycle::CascadeLifecycleNode>(
-      "execute_bt_node");
+    // Create a new context for the cascade node to make it truly independent
+    auto context = rclcpp::Context::make_shared();
+    context->init(0, nullptr);
     
+    rclcpp::NodeOptions options;
+    options.context(context);
+    
+    std::string bt_node_name = std::string(parent_->get_name()) + "_bt_node";
+    cascade_node_ = std::make_shared<rclcpp_cascade_lifecycle::CascadeLifecycleNode>(
+      bt_node_name, options);
+        
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
       
@@ -135,7 +132,6 @@ private:
   BT::SharedLibrary loader_;
   BT::Tree tree_;
   std::string bt_name_;
-  std::vector<std::string> on_success_transition_;
 
   BT::Blackboard::Ptr blackboard_;
   std::shared_ptr<BT::PublisherZMQ> publisher_zmq_;
@@ -152,19 +148,11 @@ private:
       rate.sleep();
     }
 
-    if (!on_success_transition_.empty()) {
-
-      for (const auto &transition : on_success_transition_) {
-        auto msg = std::make_shared<std_msgs::msg::String>();
-        msg->data = transition;
-        efferent_->publish(0, msg);
-      }
-    }
+    auto msg = std::make_shared<std_msgs::msg::Bool>();
+    msg->data = 1;
+    efferent_->publish(0, msg);
+    
   
-    RCLCPP_INFO(parent_->get_logger(),
-                "Behavior Tree finished, deactivating ExecuteBt.");
-    parent_->trigger_transition(
-        lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
   }
 };
 

@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
-    pkg_dir = get_package_share_directory('cs4home_receptionist')
+    pkg_dir = get_package_share_directory('cs4home_hri_challenge')
     params_file = os.path.join(pkg_dir, 'config', 'params.yaml')
 
     declare_namespace_cmd = DeclareLaunchArgument(
@@ -26,7 +26,7 @@ def generate_launch_description():
     )
 
     find_seat_node = Node(
-        package='cs4home_receptionist',
+        package='cs4home_hri_challenge',
         executable='find_seat_cognitive_module',
         name='find_seat_cognitive_module',
         namespace=namespace,
@@ -35,7 +35,7 @@ def generate_launch_description():
     )
 
     greeting_guest_node = Node(
-        package='cs4home_receptionist',
+        package='cs4home_hri_challenge',
         executable='greeting_guest_cognitive_module',
         name='greeting_guest_cognitive_module',
         namespace=namespace,
@@ -44,7 +44,7 @@ def generate_launch_description():
     )
 
     describe_person_node = Node(
-        package='cs4home_receptionist',
+        package='cs4home_hri_challenge',
         executable='describe_person_cognitive_module',
         name='describe_person_cognitive_module',
         namespace=namespace,
@@ -53,7 +53,7 @@ def generate_launch_description():
     )
 
     grab_bag_node = Node(
-        package='cs4home_receptionist',
+        package='cs4home_hri_challenge',
         executable='grab_bag_cognitive_module',
         name='grab_bag_cognitive_module',
         namespace=namespace,
@@ -62,7 +62,7 @@ def generate_launch_description():
     )
 
     transport_bag_node = Node(
-        package='cs4home_receptionist',
+        package='cs4home_hri_challenge',
         executable='transport_bag_cognitive_module',
         name='transport_bag_cognitive_module',
         namespace=namespace,
@@ -70,10 +70,10 @@ def generate_launch_description():
         parameters=[params_file]
     )
 
-    receptionist_master = Node(
-        package='cs4home_receptionist',
-        executable='receptionist_master',
-        name='receptionist_master',
+    hri_challenge_master = Node(
+        package='cs4home_hri_challenge',
+        executable='hri_challenge_master',
+        name='hri_challenge_master',
         namespace=namespace,
         output='screen',
         parameters=[params_file]
@@ -82,7 +82,7 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(declare_namespace_cmd)
-    ld.add_action(receptionist_master)
+    ld.add_action(hri_challenge_master)
     #ld.add_action(move_to_node)
     ld.add_action(find_seat_node)
     ld.add_action(greeting_guest_node)
