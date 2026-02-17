@@ -49,7 +49,7 @@ public:
 
   explicit ExecuteBT(rclcpp_lifecycle::LifecycleNode::SharedPtr parent)
       : Core("execute_bt", parent) {
-    RCLCPP_DEBUG(parent_->get_logger(), "Core created: [ExecuteBT]");
+    RCLCPP_INFO(parent_->get_logger(), "Core created: [ExecuteBT]");
   }
 
   /**
@@ -57,15 +57,17 @@ public:
    * @return True if configuration is successful.
    */
   bool configure() override {
-
+    // return true;
+    RCLCPP_INFO(parent_->get_logger(), "Configuring CORE!");
     std::vector<std::string> plugin_list;
     parent_->get_parameter("plugin_list", plugin_list);
     parent_->get_parameter("bt_name", bt_name_);
 
+
     for (const auto &plugin : plugin_list) {
       try {
+        RCLCPP_INFO(parent_->get_logger(), "Loading plugin: %s", plugin.c_str());
         factory_.registerFromPlugin(loader_.getOSName(plugin));
-        RCLCPP_DEBUG(parent_->get_logger(), "Loaded plugin: %s", plugin.c_str());
       } catch (const std::exception &e) {
         RCLCPP_ERROR(parent_->get_logger(), "Failed to load plugin '%s': %s", plugin.c_str(), e.what());
       }
@@ -73,6 +75,7 @@ public:
     std::string pkgpath =
     ament_index_cpp::get_package_share_directory("cs4home_hri_challenge");
     std::string xml_file = pkgpath + "/bt_xml/" + bt_name_;
+    RCLCPP_INFO(parent_->get_logger(), "Behavior Tree XML file path: %s", xml_file.c_str());
     
     // Create a new context for the cascade node to make it truly independent
     auto context = rclcpp::Context::make_shared();

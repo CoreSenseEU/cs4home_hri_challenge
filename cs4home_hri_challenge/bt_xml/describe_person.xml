@@ -9,36 +9,24 @@
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
             <Action ID="Speak" say_text="Please follow me, i will get you to the  party"/>
-            <!-- <Action ID="LookAt" tf_frame="{attention_home}"/> -->
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/> -->
+            <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
             
-            <!-- <ReactiveFallback>
-                <Condition ID="IsDetected" confidence="0.6"
-                                            interest="person"
-                                            frames="{frames}" 
-                                            max_depth="3" 
-                                            max_entities="1"
-                                            order="depth_nearest"
-                                            best_detection="{best_detection}"/>
-                            
-                <Action ID="Pan" period="45.0" range="45" pitch_angle="-10"/>
-            </ReactiveFallback> -->
             <RetryUntilSuccessful num_attempts="-1">
-                <Sequence>
-                    <Action ID="Pan" pitch_angle="0"/>
-                    <Delay delay_msec="2500">
-                        <Condition ID="IsDetected"
-                                confidence="0.6"
-                                interest="person"
-                                frames=""
-                                max_depth="2"
-                                max_entities="1"
-                                order="depth_nearest"
-                                best_detection="{best_detection}"/>
-                    </Delay>
-
-                </Sequence>
+                <ReactiveFallback>                                
+                    <Condition ID="IsDetected" confidence="0.6"
+                                    interest="person"
+                                    cam_frame="{cam_frame}"
+                                    frames="{frames}" 
+                                    max_depth="3" 
+                                    max_entities="1"
+                                    order="depth_nearest"
+                                    best_detection="{best_detection}"/>
+                    <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
+                </ReactiveFallback>
             </RetryUntilSuccessful>
+            <Action ID="ActivationControl" deactivate="false" node_name="attention_server"/>
             <Action ID="GetAttendedGuest"
                     guest_attended="{guest_attending}"/>
             <Action ID="GetGuestInfo"
@@ -67,7 +55,7 @@
                                             axis="z"/>
             </ReactiveFallback>
             <Action ID="LookAt" tf_frame="{best_detection}"/>
-            <Action ID="Speak" say_text=" By the way" param="{name_1}"/>
+            <Action ID="Speak" say_text=" By the way" param="{guest_name}"/>
             <Action ID="Speak" say_text="our host" param="{h_name}"/>
             <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>
         <!-- </Sequence> -->

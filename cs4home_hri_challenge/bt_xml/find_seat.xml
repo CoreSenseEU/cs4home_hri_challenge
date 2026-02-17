@@ -12,18 +12,17 @@
             <!-- <Action ID="LookAt" tf_frame="{attention_home}"/> -->
             <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/> -->
             <!-- <ReactiveFallback> -->
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/> -->
             <Action ID="Speak" say_text="I'll find you a seat"/>
+            <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
             <RetryUntilSuccessful num_attempts="-1">
-                
-                    
+                <ReactiveFallback>
+                    <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
                     <Sequence>
-                        <Action ID="Pan" period="1.5" range="45" pitch_angle="0"/>
-                        <Delay delay_msec="5000">
-                            <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
-                        </Delay>
+                        <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
+                        <Action ID="Pan" period="20.0" range="45" pitch_angle="0"/>
                     </Sequence>
-                
+                </ReactiveFallback>
             </RetryUntilSuccessful>
             <!-- </ReactiveFallback> -->
             <Action ID="LookAt" tf_frame="{chair_frame}"/>
@@ -32,8 +31,8 @@
                                     low_z="0.6"
                                     high_z="0.9"/>
             <Action ID="Speak" say_text="Please, sit over there"/> 
-            <!-- <Action ID="MoveToPredefined" pose="home"/>
-            <Action ID="LookAt" tf_frame="{attention_home}"/> -->
+            <Action ID="PlayMotionPredefined" motion_name="home"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
         </Sequence> 
     </BehaviorTree>
 </root>

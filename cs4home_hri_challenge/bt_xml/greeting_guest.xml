@@ -9,11 +9,13 @@
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
             <Action ID="LookAt" tf_frame="{attention_home}"/>                                        
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
-            <Action ID="Speak" say_text="Hi, this is Gentlebot. I'm ready to receive a new guest"/> 
+            <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
+            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/> -->
+            <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
+
             <RetryUntilSuccessful num_attempts="-1">
-                <!-- <Fallback>
-                    <Timeout msec="2000">
+                <Fallback>
+                    <Timeout msec="8000">
                         <ReactiveFallback>                                
                             <Condition ID="IsDetected" confidence="0.6"
                                                         interest="person"
@@ -21,7 +23,7 @@
                                                         max_depth="2"
                                                         max_entities="1"
                                                         order="depth_nearest"/>
-                            <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>                                    
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
                         </ReactiveFallback>
                     </Timeout>
                     <Inverter>
@@ -30,21 +32,9 @@
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>
                     </Delay>
-                </Fallback> -->
-                <Sequence>
-                    <Action ID="Pan" pitch_angle="20"/>
-                    <Delay delay_msec="3000">
-                        <Condition ID="IsDetected"
-                                confidence="0.6"
-                                interest="person"
-                                frames=""
-                                max_depth="2"
-                                max_entities="1"
-                                order="depth_nearest"/>
-                    </Delay>
-
-                </Sequence>
+                </Fallback>
             </RetryUntilSuccessful>
+            <Action ID="ActivationControl" deactivate="false" node_name="attention_server"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
             </RetryUntilSuccessful>

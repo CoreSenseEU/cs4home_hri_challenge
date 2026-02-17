@@ -1,8 +1,9 @@
 hri_challenge_master:
   ros__parameters:
     flows: [flow_1]
-    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module, grab_bag_cognitive_module, transport_bag_cognitive_module]
-    on_startup: [greeting_guest_cognitive_module]  # Node auto-activates from launch file
+    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module]
+    #flow_2: [greeting_guest_cognitive_module, grab_bag_cognitive_module, describe_person_cognitive_module, transport_bag_cognitive_module, find_seat_cognitive_module]
+    on_startup: [greeting_guest_cognitive_module]  # Node auto-activates HAS TO BE INSIDE FLOW 1
 
 
 greeting_guest_cognitive_module:
@@ -10,7 +11,8 @@ greeting_guest_cognitive_module:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    # - init_hri_challenge_bt_node
+    - activation_control_bt_node
+    - init_receptionist_bt_node
     - look_at_bt_node
     - speak_bt_node
     - is_detected_bt_node
@@ -41,11 +43,12 @@ find_seat_cognitive_module:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    # - init_hri_challenge_bt_node
+    - init_receptionist_bt_node
+    - activation_control_bt_node
     - move_to_bt_node
     - is_sittable_bt_node
     - point_at_bt_node
-    - move_to_predefined_bt_node
+    - play_motion_predefined_bt_node
     - speak_bt_node
     - is_detected_bt_node
     - pan_bt_node
@@ -66,7 +69,8 @@ describe_person_cognitive_module:
     core: execute_bt
     efferent: transition_output
     plugin_list:
-    # - init_hri_challenge_bt_node
+    - activation_control_bt_node
+    - init_receptionist_bt_node
     - is_detected_bt_node
     - pan_bt_node
     - look_at_bt_node
