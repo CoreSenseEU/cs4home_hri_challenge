@@ -126,6 +126,8 @@ public:
 private:
   // Flow configuration
   FlowConfig flow_config_;
+  std::vector<std::string> flow_names_;
+  std::map<std::string, FlowConfig> flow_configs_;
   
   // Single callback group for all lifecycle service calls (change_state and get_state)
   rclcpp::CallbackGroup::SharedPtr lifecycle_callback_group_;
@@ -141,6 +143,10 @@ private:
   // Completion subscribers for sequential state machine
   std::map<std::string, rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr> completion_subscribers_;
   
+  // Current active flow
+  size_t current_flow_index_ = 0;
+  std::string active_flow_;
+
   // Current module index in the sequence
   size_t current_module_index_ = 0;
 
@@ -148,17 +154,42 @@ private:
     RCLCPP_INFO(this->get_logger(), "Parsing flow configuration...");
     
     // Get flow names
-    std::vector<std::string> flow_names;
-    if (!this->get_parameter("flows", flow_names) || flow_names.empty()) {
+    if (!this->get_parameter("flows", flow_names_) || flow_names_.empty()) {
       RCLCPP_ERROR(this->get_logger(), "No flows parameter defined!");
       return;
     }
-    
-    std::string flow_name = flow_names[0];  // Use first flow
-    RCLCPP_INFO(this->get_logger(), "Loading flow: %s", flow_name.c_str());
-    
-    // Declare the flow parameter before getting it
-    this->declare_parameter<std::vector<std::string>>(flow_name, {});
+
+    flow_configs_.clear();
+
+    std::set<std::string> all_unique_modules;
+
+    for (const auto& flow_name : flow_names_) {
+      FlowConfig cfg;
+
+      // Declare flow parameter so get_parameter works even if not pre-declared
+      this->declare_parameter<std::vector<std::string>>(flow_name, {});
+      std::vector<std::string> modules;
+
+      if (!this->get_parameter(flow_name, modules) || modules.empty()) {
+        RCLCPP_WARN(this->get_logger(), "Flow '%s' is missing or empty", flow_name.c_str());
+        continue;
+      }
+
+      cfg.all_modules = modules;
+      flow_configs_[flow_name] = cfg;
+
+      RCLCPP_INFO(this->get_logger(), "Loaded %s with %zu module(s)",
+                  flow_name.c_str(), modules.size());
+      for (const auto& mod : modules) {
+        RCLCPP_INFO(this->get_logger(), "  - %s", mod.c_str());
+        all_unique_modules.insert(mod); 
+      }
+    }
+
+    if (flow_configs_.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "No valid flows were loaded. Check YAML params.");
+      return;
+    }
     
     // Get initial states from on_startup parameter
     if (!this->get_parameter("on_startup", flow_config_.initial_states)) {
@@ -168,13 +199,33 @@ private:
                   flow_config_.initial_states.size());
     }
     
-    // Get all modules in the flow (just the list)
-    if (this->get_parameter(flow_name, flow_config_.all_modules)) {
-      RCLCPP_INFO(this->get_logger(), "Found %zu modules in flow", flow_config_.all_modules.size());
-      for (const auto& module : flow_config_.all_modules) {
-        RCLCPP_INFO(this->get_logger(), "  - %s", module.c_str());
-      }
+    flow_config_.all_modules.assign(all_unique_modules.begin(), all_unique_modules.end());
+    RCLCPP_INFO(this->get_logger(), "Total unique modules: %zu",
+                flow_config_.all_modules.size());
+
+    current_flow_index_ = 0;
+    active_flow_ = flow_names_.front();
+
+    RCLCPP_INFO(this->get_logger(),
+                "Active flow set to: %s",
+                active_flow_.c_str());
+
+  }
+
+  void switch_to_flow(const std::string& flow_name) {
+    auto it = flow_configs_.find(flow_name);
+    if (it == flow_configs_.end() || it->second.all_modules.empty()) {
+      RCLCPP_ERROR(get_logger(), "Flow %s not found or empty", flow_name.c_str());
+      return;
     }
+
+    active_flow_ = flow_name;
+    current_module_index_ = 0;
+
+    const auto& first_module = it->second.all_modules.front();
+
+    RCLCPP_INFO(get_logger(), "Switching to flow: %s", flow_name.c_str());
+    activate_module(first_module);
   }
 
   void configure_nodes() {
@@ -384,31 +435,50 @@ private:
     
     // Just deactivate the module - keep it configured and ready for next activation
     deactivate_module(module_name);
+
+    if (!success) {
+      RCLCPP_WARN(this->get_logger(), "FAILURE → Retrying module: %s", module_name.c_str());
+      activate_module(module_name);
+      return;
+    }
+
+    auto fit = flow_configs_.find(active_flow_);
+    if (fit == flow_configs_.end() || fit->second.all_modules.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "Active flow '%s' not found/empty", active_flow_.c_str());
+      return;
+    }
+
+    const auto& modules = fit->second.all_modules;
     
     // Find current module index
-    auto it = std::find(flow_config_.all_modules.begin(), 
-                       flow_config_.all_modules.end(), 
-                       module_name);
+    auto it = std::find(modules.begin(), modules.end(), module_name);
     
-    if (it == flow_config_.all_modules.end()) {
+    if (it == modules.end()) {
       RCLCPP_ERROR(this->get_logger(), "Module %s not found in flow!", module_name.c_str());
       return;
     }
-    
-    size_t current_idx = std::distance(flow_config_.all_modules.begin(), it);
-    
-    if (success) {
-      size_t next_idx = (current_idx + 1) % flow_config_.all_modules.size();
-      std::string next_module = flow_config_.all_modules[next_idx];
-      
-      RCLCPP_INFO(this->get_logger(), "SUCCESS → Transitioning to next module: %s", 
-                  next_module.c_str());
-      activate_module(next_module);
-    } else {
-      // FAILURE: Retry the same module
-      RCLCPP_WARN(this->get_logger(), "FAILURE → Retrying module: %s", module_name.c_str());
-      activate_module(module_name);
+
+    auto next_it = std::next(it);
+    if (next_it != modules.end()) {
+        RCLCPP_INFO(this->get_logger(),
+                    "SUCCESS → Next module in %s: %s",
+                    active_flow_.c_str(), next_it->c_str());
+        activate_module(*next_it);
+        return;
     }
+    
+    RCLCPP_INFO(this->get_logger(), "Flow finished: %s", active_flow_.c_str());
+    
+    if (current_flow_index_ + 1 >= flow_names_.size()) {
+      RCLCPP_INFO(this->get_logger(), "No more flows. Scenario finished.");
+      return;
+    }
+
+    current_flow_index_++;
+    active_flow_ = flow_names_[current_flow_index_];
+
+    RCLCPP_INFO(this->get_logger(), "Starting next flow: %s", active_flow_.c_str());
+    switch_to_flow(active_flow_);
   }
 
 };
