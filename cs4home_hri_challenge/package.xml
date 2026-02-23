@@ -19,6 +19,7 @@
   <depend>lifecycle_msgs</depend>
   <depend>hri</depend>
   <depend>motion</depend>
+  <depend>configuration</depend>
   <depend>perception</depend>
   <depend>attention_system</depend>
   <depend>perception_system</depend>
