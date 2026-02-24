@@ -15,7 +15,7 @@
 
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
-                    <Timeout msec="8000">
+                    <Timeout msec="18000">
                         <ReactiveFallback>                                
                             <Condition ID="IsDetected" confidence="0.6"
                                                         interest="person"
@@ -23,7 +23,7 @@
                                                         max_depth="2"
                                                         max_entities="1"
                                                         order="depth_nearest"/>
-                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
                         </ReactiveFallback>
                     </Timeout>
                     <Inverter>
