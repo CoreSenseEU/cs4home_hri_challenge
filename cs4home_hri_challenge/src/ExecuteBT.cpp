@@ -57,12 +57,11 @@ public:
    * @return True if configuration is successful.
    */
   bool configure() override {
-    // return true;
     RCLCPP_INFO(parent_->get_logger(), "Configuring CORE!");
+
     std::vector<std::string> plugin_list;
     parent_->get_parameter("plugin_list", plugin_list);
     parent_->get_parameter("bt_name", bt_name_);
-
 
     for (const auto &plugin : plugin_list) {
       try {
@@ -72,32 +71,65 @@ public:
         RCLCPP_ERROR(parent_->get_logger(), "Failed to load plugin '%s': %s", plugin.c_str(), e.what());
       }
     }
-    std::string pkgpath =
-    ament_index_cpp::get_package_share_directory("cs4home_hri_challenge");
-    std::string xml_file = pkgpath + "/bt_xml/" + bt_name_;
-    RCLCPP_INFO(parent_->get_logger(), "Behavior Tree XML file path: %s", xml_file.c_str());
-    
+
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("cs4home_hri_challenge");
+    xml_file_ = pkgpath + "/bt_xml/" + bt_name_;
+    RCLCPP_INFO(parent_->get_logger(), "Behavior Tree XML file path: %s", xml_file_.c_str());
+
     // Create a new context for the cascade node to make it truly independent
     auto context = rclcpp::Context::make_shared();
     context->init(0, nullptr);
-    
+
     rclcpp::NodeOptions options;
     options.context(context);
-    
+
     std::string bt_node_name = std::string(parent_->get_name()) + "_bt_node";
     cascade_node_ = std::make_shared<rclcpp_cascade_lifecycle::CascadeLifecycleNode>(
       bt_node_name, options);
-        
+
+    // 1) Configure first (so internal setup happens first)
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+    // 2) Copy params from parent_ to cascade_node_ (BT node)
+    std::vector<std::string> wp_names;
+    if (parent_->has_parameter("waypoints_names")) {
+      parent_->get_parameter("waypoints_names", wp_names);
+    }
+
+    if(!cascade_node_->has_parameter("waypoints_names")) {
+      cascade_node_->declare_parameter("waypoints_names", wp_names);
+    } 
+
+    cascade_node_->set_parameter(rclcpp::Parameter("waypoints_names", wp_names));
+    // waypoints.<name>
+    for (const auto& wp : wp_names) {
+      const std::string key = "waypoints." + wp;
+      RCLCPP_INFO(parent_->get_logger(), "Copying waypoint parameter: %s", key.c_str());
+
+      std::vector<double> wp_pos;
+      if (parent_->has_parameter(key)) {
+        parent_->get_parameter(key, wp_pos);
+      }
+
+      if(!cascade_node_->has_parameter(key)) {
+        cascade_node_->declare_parameter(key, wp_pos);
+      }
+      
+      cascade_node_->set_parameter(rclcpp::Parameter(key, wp_pos));
+    }
+
+    RCLCPP_INFO(parent_->get_logger(),
+                "Copied %zu waypoint(s) to BT node [%s]",
+                wp_names.size(), bt_node_name.c_str());
+
+    // 3) Activate after params are available
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-      
-    blackboard_ = BT::Blackboard::create();
-    blackboard_->set("node", cascade_node_);
-      
-    tree_ = factory_.createTreeFromFile(xml_file, blackboard_);
-    
-    // publisher_zmq_ = std::make_shared<BT::PublisherZMQ>(tree_, 10, 1670, 1671);
-      
+
+    // blackboard_ = BT::Blackboard::create();
+    // blackboard_->set("node", cascade_node_);
+
+    // tree_ = factory_.createTreeFromFile(xml_file, blackboard_);
+
     RCLCPP_DEBUG(parent_->get_logger(), "[ExecuteBT] configured");
     return true;
   }
@@ -109,6 +141,10 @@ public:
    * @return True if activation is successful.
    */
   bool activate() override {
+    stop_requested_.store(false);
+    blackboard_ = BT::Blackboard::create();
+    blackboard_->set("node", cascade_node_);
+    tree_ = factory_.createTreeFromFile(xml_file_, blackboard_);
     bt_thread_ = std::thread(&ExecuteBT::runBehaviorTree, this);
     return true;
   }
@@ -124,9 +160,13 @@ public:
    * @return True to indicate successful deactivation.
    */
   bool deactivate() override {
+    stop_requested_.store(true);
+    tree_.haltTree();
     if (bt_thread_.joinable()) {
       bt_thread_.join();
     }
+    tree_ = BT::Tree();
+    blackboard_.reset();
     return true;
   }
 
@@ -135,20 +175,27 @@ private:
   BT::SharedLibrary loader_;
   BT::Tree tree_;
   std::string bt_name_;
+  std::string xml_file_;
 
   BT::Blackboard::Ptr blackboard_;
   std::shared_ptr<BT::PublisherZMQ> publisher_zmq_;
   std::thread bt_thread_;
   std::shared_ptr<rclcpp_cascade_lifecycle::CascadeLifecycleNode> cascade_node_;
+  std::atomic_bool stop_requested_{false};
 
  void runBehaviorTree() {
+    tree_.haltTree();
     rclcpp::Rate rate(10);
     bool finish = false;
 
-    while (!finish && rclcpp::ok()) {
+    while (!stop_requested_.load() && !finish && rclcpp::ok()) {
       finish = tree_.rootNode()->executeTick() != BT::NodeStatus::RUNNING;
       rclcpp::spin_some(cascade_node_->get_node_base_interface());
       rate.sleep();
+    }
+
+    if (stop_requested_.load()) {
+      return;
     }
 
     auto msg = std::make_shared<std_msgs::msg::Bool>();
