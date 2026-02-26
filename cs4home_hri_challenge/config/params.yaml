@@ -1,7 +1,15 @@
+/**:
+  ros__parameters:
+    waypoints_names: ["entrance", "party", "guest_confirmation"]
+    waypoints: # [x, y, yaw] only 3 numbers!!
+      entrance: [1.175, 6.833, 1.350]
+      party: [1.215, 4.201, 0.002]
+      guest_confirmation: [1.256, 3.978, 0.003]
+
 hri_challenge_master:
   ros__parameters:
     flows: [flow_1]
-    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module]
+    flow_1: [greeting_guest_cognitive_module]
     #flow_2: [greeting_guest_cognitive_module, grab_bag_cognitive_module, describe_person_cognitive_module, transport_bag_cognitive_module, find_seat_cognitive_module]
     on_startup: [greeting_guest_cognitive_module]  # Node auto-activates HAS TO BE INSIDE FLOW 1
 
@@ -32,11 +40,7 @@ greeting_guest_cognitive_module:
     transition_output:
       topics: ['greeting_guest_cognitive_module/completion']
       types: ['std_msgs/msg/Bool']
-    waypoints_names: ["entrance", "party", "guest_confirmation"]
-    waypoints: # [x, y, yaw] only 3 numbers!!
-      entrance: [1.175, 6.833, 1.350]
-      party: [1.215, 4.201, 0.002]
-      guest_confirmation: [1.256, 3.978, 0.003]
+
 
 find_seat_cognitive_module:
   ros__parameters:
@@ -58,11 +62,7 @@ find_seat_cognitive_module:
     transition_output:
       topics: ['find_seat_cognitive_module/completion']
       types: ['std_msgs/msg/Bool']
-    waypoints_names: ["entrance", "party", "guest_confirmation"]
-    waypoints: # [x, y, yaw] only 3 numbers!!
-      entrance: [1.175, 6.833, 1.350]
-      party: [1.215, 4.201, 0.002]
-      guest_confirmation: [1.256, 3.978, 0.003]
+
 
 describe_person_cognitive_module:
   ros__parameters:
@@ -84,11 +84,7 @@ describe_person_cognitive_module:
     transition_output:
       topics: ['describe_person_cognitive_module/completion']
       types: ['std_msgs/msg/Bool']
-    waypoints_names: ["entrance", "party", "guest_confirmation"]
-    waypoints: # [x, y, yaw] only 3 numbers!!
-      entrance: [1.175, 6.833, 1.350]
-      party: [1.215, 4.201, 0.002]
-      guest_confirmation: [1.256, 3.978, 0.003]
+
 
 grab_bag_cognitive_module:
   ros__parameters:
@@ -105,6 +101,7 @@ grab_bag_cognitive_module:
     transition_output:
       topics: ['grab_bag_cognitive_module/completion']
       types: ['std_msgs/msg/Bool']
+
 
 transport_bag_cognitive_module:
   ros__parameters:

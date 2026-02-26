@@ -36,59 +36,70 @@
             </RetryUntilSuccessful>
             <Action ID="ActivationControl" deactivate="false" node_name="attention_server"/>
             <RetryUntilSuccessful num_attempts="-1">
-                <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
             </RetryUntilSuccessful>
-            <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>
-            <Action ID="LookAt" tf_frame="person_0_filtered"/> 
-            <Action ID="ExtractEntityColor" confidence="0.6" interest="person" person_id="{guest_color_id}"/>
+            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
+            <Action ID="LookAt" tf_frame="{best_detection}"/> 
             <RetryUntilSuccessful num_attempts="-1">
                     <SequenceStar>
                         <Sequence>
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
                                 <Action ID="Speak" say_text="What's your name?"/>
                             </ReactiveSequence>
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
                             </ReactiveSequence>
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
                                 <Action ID="Listen" listen_text="{text_value}"/>
                             </ReactiveSequence>
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                                 <Action ID="Query" text="{text_value}" intention="name" intention_value="{name_value}"/>
                             </ReactiveSequence>
                         
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
                                 <Action ID="Speak" say_text="So you are" param="{name_value}"/>
                                 <Action ID="Speak" say_text="Please say yes or no"/>
                             </ReactiveSequence> 
 
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                                <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                                 <Action ID="DialogConfirmation" />
                             </ReactiveSequence>
                         </Sequence>
@@ -97,24 +108,30 @@
                             <Action ID="Speak" say_text="What's your favorite drink?"/>
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                             </RetryUntilSuccessful>
-                            <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                            <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                         </ReactiveSequence>
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                             </RetryUntilSuccessful>
-                            <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                            <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="Listen" listen_text="{text_value2}"/>
                         </ReactiveSequence>
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                             </RetryUntilSuccessful>
-                            <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                            <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="Query" text="{text_value2}" intention="drink" intention_value="{drink_value}"/>
                         </ReactiveSequence>
 
@@ -123,9 +140,11 @@
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
                             </RetryUntilSuccessful>
-                            <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> 
+                            <Action ID="LookAt" tf_frame="{best_detection}"/> 
+
+                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="DialogConfirmation" />
                         </ReactiveSequence>
                         

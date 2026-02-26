@@ -82,45 +82,18 @@ public:
 
     rclcpp::NodeOptions options;
     options.context(context);
-
+    
+    // 2) Copy ALL params from parent_ to cascade_node_ (BT node)
+    auto param_names = parent_->list_parameters({}, 0 /* depth recursive */).names;
+    auto parent_params = parent_->get_parameters(param_names);
+    options.parameter_overrides(parent_params);
+    
     std::string bt_node_name = std::string(parent_->get_name()) + "_bt_node";
     cascade_node_ = std::make_shared<rclcpp_cascade_lifecycle::CascadeLifecycleNode>(
       bt_node_name, options);
 
     // 1) Configure first (so internal setup happens first)
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    // 2) Copy params from parent_ to cascade_node_ (BT node)
-    std::vector<std::string> wp_names;
-    if (parent_->has_parameter("waypoints_names")) {
-      parent_->get_parameter("waypoints_names", wp_names);
-    }
-
-    if(!cascade_node_->has_parameter("waypoints_names")) {
-      cascade_node_->declare_parameter("waypoints_names", wp_names);
-    } 
-
-    cascade_node_->set_parameter(rclcpp::Parameter("waypoints_names", wp_names));
-    // waypoints.<name>
-    for (const auto& wp : wp_names) {
-      const std::string key = "waypoints." + wp;
-      RCLCPP_INFO(parent_->get_logger(), "Copying waypoint parameter: %s", key.c_str());
-
-      std::vector<double> wp_pos;
-      if (parent_->has_parameter(key)) {
-        parent_->get_parameter(key, wp_pos);
-      }
-
-      if(!cascade_node_->has_parameter(key)) {
-        cascade_node_->declare_parameter(key, wp_pos);
-      }
-      
-      cascade_node_->set_parameter(rclcpp::Parameter(key, wp_pos));
-    }
-
-    RCLCPP_INFO(parent_->get_logger(),
-                "Copied %zu waypoint(s) to BT node [%s]",
-                wp_names.size(), bt_node_name.c_str());
 
     // 3) Activate after params are available
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -185,7 +158,7 @@ private:
 
  void runBehaviorTree() {
     tree_.haltTree();
-    rclcpp::Rate rate(10);
+    rclcpp::Rate rate(30);
     bool finish = false;
 
     while (!stop_requested_.load() && !finish && rclcpp::ok()) {

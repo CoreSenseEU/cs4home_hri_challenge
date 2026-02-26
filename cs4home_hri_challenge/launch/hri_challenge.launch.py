@@ -88,5 +88,5 @@ def generate_launch_description():
     ld.add_action(greeting_guest_node)
     ld.add_action(describe_person_node)
     ld.add_action(grab_bag_node)
-    ld.add_action(transport_bag_node)
+    # ld.add_action(transport_bag_node)
     return ld
