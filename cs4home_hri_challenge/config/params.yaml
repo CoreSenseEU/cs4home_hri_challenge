@@ -8,9 +8,9 @@
 
 hri_challenge_master:
   ros__parameters:
-    flows: [flow_1]
-    flow_1: [greeting_guest_cognitive_module]
-    #flow_2: [greeting_guest_cognitive_module, grab_bag_cognitive_module, describe_person_cognitive_module, transport_bag_cognitive_module, find_seat_cognitive_module]
+    flows: [flow_1, flow_2]
+    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module]
+    flow_2: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module]
     on_startup: [greeting_guest_cognitive_module]  # Node auto-activates HAS TO BE INSIDE FLOW 1
 
 
@@ -58,6 +58,9 @@ find_seat_cognitive_module:
     - pan_bt_node
     - look_at_bt_node
     - sleep_bt_node
+    - remove_string_prefix_bt_node
+    - get_attended_guest_bt_node
+    - check_policy_bt_node
     bt_name: 'find_seat.xml'
     transition_output:
       topics: ['find_seat_cognitive_module/completion']

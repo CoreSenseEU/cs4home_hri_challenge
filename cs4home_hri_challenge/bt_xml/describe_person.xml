@@ -29,6 +29,8 @@
             <Action ID="ActivationControl" deactivate="false" node_name="attention_server"/>
             <Action ID="GetAttendedGuest"
                     guest_attended="{guest_attending}"/>
+            <Action ID="Speak" say_text="DEBUG SPEAK, GUEST ID IS" param="{guest_attending}"/>
+
             <Action ID="GetGuestInfo"
                     guest_attending_id="{guest_attending}"
                     guest_name="{guest_name}"
