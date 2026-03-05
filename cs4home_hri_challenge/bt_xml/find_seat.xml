@@ -9,8 +9,10 @@
                                     host_drink="{h_drink}"
                                     current_guest="{n}"
                                     attention_home="{attention_home}" /> 
-        
+                                
+        <Action ID="Speak" say_text="come here"/>
         <Action ID="GetAttendedGuest" guest_attended="{guest_attending}"/>
+        <!-- <Action ID="Speak" say_text="GUEST IS" param="{guest_attending}"/> -->
         <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
 
         <Action ID="Speak" say_text="I'll find you a seat"/>
@@ -64,9 +66,10 @@
             </Sequence>
             
             <Action ID="Speak" say_text="Please sit where you find yourself more comfortable "/>
+            
         </Switch2>
 
-
+        <Action ID="RemoveGuestAttended" guest_attended="{guest_attending}"/>
         </Sequence> 
 
     </BehaviorTree>
