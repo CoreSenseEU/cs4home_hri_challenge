@@ -34,7 +34,9 @@
                                         low_z="0.6"
                                         high_z="0.9"/>
                 <Action ID="Speak" say_text="Please, sit over there"/> 
-                <Action ID="PlayMotionPredefined" motion_name="home"/>
+                <Delay delay_msec="500">
+                    <Action ID="PlayMotionPredefined" motion_name="home"/>
+                </Delay>
                 <Action ID="LookAt" tf_frame="{attention_home}"/>
             </Sequence>
 

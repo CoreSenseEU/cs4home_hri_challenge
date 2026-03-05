@@ -9,7 +9,7 @@
 hri_challenge_master:
   ros__parameters:
     flows: [flow_1, flow_2]
-    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module]
+    flow_1: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module]
     flow_2: [greeting_guest_cognitive_module, describe_person_cognitive_module, find_seat_cognitive_module]
     on_startup: [greeting_guest_cognitive_module]  # Node auto-activates HAS TO BE INSIDE FLOW 1
 
