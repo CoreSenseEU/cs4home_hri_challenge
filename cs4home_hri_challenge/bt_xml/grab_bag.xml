@@ -2,7 +2,47 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="Speak" param="" say_text="please put the bag in my gripper"/>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                          manipulation_frame="{man_frame}"
+                                          host_name="{h_name}"
+                                          host_drink="{h_drink}"
+                                          current_guest="{n}"
+                                          attention_home="{attention_home}" />
+
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}"/> 
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">  
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}"/> 
+                        <Action ID="Speak" say_text="So the host" param="{h_name}"/>
+                    </ReactiveSequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">  
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}"/>
+                        <Action ID="Speak" say_text="told me you have something for me"/>
+                    </ReactiveSequence>
+                    
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">  
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}"/>
+                        <Action ID="Speak" say_text="Please show it to me"/>
+                    </ReactiveSequence>
+                </Sequence>
+            </RetryUntilSuccessful>
+
+            
+            
+
             <!-- <Delay delay_msec="140">
                 <Action ID="MoveToPredefined" pose="open" group_name="gripper"/>
             </Delay>
