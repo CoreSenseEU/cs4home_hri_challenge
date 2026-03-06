@@ -61,6 +61,7 @@ find_seat_cognitive_module:
     - remove_string_prefix_bt_node
     - get_attended_guest_bt_node
     - check_policy_bt_node
+    - remove_guest_attended_bt_node
     bt_name: 'find_seat.xml'
     transition_output:
       topics: ['find_seat_cognitive_module/completion']
