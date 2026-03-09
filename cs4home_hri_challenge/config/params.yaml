@@ -102,6 +102,13 @@ grab_bag_cognitive_module:
     - speak_bt_node
     - is_detected_bt_node
     - sleep_bt_node
+    - extract_handover_alignment_bt_node
+    - set_torso_height_bt_node
+    - move_along_axis_bt_node
+    - move_joint_bt_node
+    - switch_yolo_model_bt_node
+    - init_receptionist_bt_node
+    - play_motion_predefined_bt_node
     bt_name: 'grab_bag.xml'
     transition_output:
       topics: ['grab_bag_cognitive_module/completion']
@@ -124,6 +131,9 @@ transport_bag_cognitive_module:
     - speak_bt_node
     - move_to_bt_node
     - sleep_bt_node
+    - remove_string_prefix_bt_node
+    - set_persistent_id_bt_node
+    - init_receptionist_bt_node
     bt_name: 'transport_bag.xml'
     transition_output:
       topics: ['transport_bag_cognitive_module/completion']

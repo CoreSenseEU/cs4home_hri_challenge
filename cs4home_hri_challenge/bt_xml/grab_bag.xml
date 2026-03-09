@@ -3,6 +3,7 @@
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <!-- <Action ID="SwitchYoloModel" model="bags.pt"/>  if uncomment then change cup to bag in the IsDetected node-->
+            <Action ID="PlayMotionPredefined" motion_name="open"/>
             <Action ID="InitReceptionist" cam_frame="{cam_frame}"
                                           manipulation_frame="{man_frame}"
                                           host_name="{h_name}"
@@ -55,7 +56,7 @@
                         </Sequence>
                     </Timeout>
                     <Inverter>
-                        <Action ID="Speak" say_text="I can't see it, please show it to me again or clearer"/>
+                        <Action ID="Speak" say_text="I can't see it, please show it to me again"/>
                     </Inverter>
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>
@@ -65,17 +66,18 @@
 
             <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x"/>
             <Action ID="SetTorsoHeight" height="{torso_z_movement}"/>
-            <Action ID="MoveJoint" joint_name="arm_4_joint" joint_value="1.83" group_name=""/>
+            <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name=""/>
             <Action ID="Speak" say_text="You can now leave me the bag"/>
-            <Delay delay_msec="500">
-                <Action ID="PlayMotionPredefined" motion_name="close"/>
-            </Delay>
-            <Delay delay_msec="500">
+            <ForceSuccess>
+                <Delay delay_msec="2000">
+                    <Action ID="PlayMotionPredefined" motion_name="close"/>
+                </Delay>
+            </ForceSuccess>
+            <Action ID="Speak" say_text="Thanks! securing the bag!"/>
+            <Delay delay_msec="2000">
                 <Action ID="PlayMotionPredefined" motion_name="home"/>
             </Delay>
-            <Action ID="Speak" say_text="Thank you for the bag"/>
-
-
+            <Action ID="Speak" say_text="Bag secured!"/>
 
             <!-- CHECK THE JOINT VALUE -->
         </Sequence> 
