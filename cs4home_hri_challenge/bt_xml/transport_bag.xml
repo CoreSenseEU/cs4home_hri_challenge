@@ -12,29 +12,30 @@
             <Action ID="Speak" param="{h_name}" say_text=""/>
             <Action ID="Speak" param="" say_text="Where do you want to drop the bag?"/>
             <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end "/>
-            <!-- <RetryUntilSuccessful num_attempts="-1">
+            <RetryUntilSuccessful num_attempts="-1">
                 <Sequence>
                     <Fallback>
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">
                                 <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" 
                                                         confidence="0.6" 
-                                                        person_id="{person_id}"
                                                         interest="person"
                                                         max_depth="3.0" 
                                                         max_entities="2"
-                                                        order="depth"/>
+                                                        order="depth"
+                                                        best_detection="{best_detection}"/>
                             </RetryUntilSuccessful>
-                            <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
-                            <Action ID="LookAt" tf_frame="person_0_filtered"/>
+                            <Action ID="RemoveStringPrefix" string_to_remove="{best_detection}" prefix="person_" result="{id}"/>
+                            <Action ID="SetPersistentId" id="{id}"/>
+                            <Action ID="LookAt" tf_frame="{best_detection}"/>
 
                             <Condition ID="IsEntityMoving" distance_tolerance="0.6"
                                                         robot_distance_to_person="1.5"
-                                                        frame="person_0_filtered"
+                                                        frame="{best_detection}"
                                                         check_time="8.0"/>
                             <Action ID="FollowEntity" camera_frame="head_front_camera_optical_frame"
                                                     distance_tolerance="0.2"
-                                                    frame_to_follow="person_0_filtered"
+                                                    frame_to_follow="{best_detection}"
                                                     x_axis_max="{max_x}"
                                                     x_axis_min="{min_x}"
                                                     y_axis_max="{max_y}"
@@ -44,20 +45,18 @@
                     </Fallback>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" confidence="0.3" person_id="{person_id}" interest="person" max_depth="2.5" max_entities="1" order="color"/>
+                            <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" confidence="0.3" interest="person" max_depth="2.5" max_entities="1" order="color"/>
                         </RetryUntilSuccessful>
-                        <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
-                        <Action ID="LookAt" tf_frame="person_0_filtered"/>
                         <ForceSuccess>
                             <Action ID="GoalPublisher" 
                             camera_frame="head_front_camera_optical_frame"
                             distance_tolerance="0.2"
-                            frame_to_follow="person_0_filtered"/>  
+                            frame_to_follow="{best_detection}"/>  
                         </ForceSuccess>
                         <Action ID="DialogConfirmation"/>
                     </ReactiveSequence>
                 </Sequence>
-            </RetryUntilSuccessful> -->
+            </RetryUntilSuccessful>
         </Sequence> 
     </BehaviorTree>
 </root>

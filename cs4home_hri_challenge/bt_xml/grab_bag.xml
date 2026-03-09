@@ -2,6 +2,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
+            <!-- <Action ID="SwitchYoloModel" model="bags.pt"/>  if uncomment then change cup to bag in the IsDetected node-->
             <Action ID="InitReceptionist" cam_frame="{cam_frame}"
                                           manipulation_frame="{man_frame}"
                                           host_name="{h_name}"
@@ -40,22 +41,43 @@
                 </Sequence>
             </RetryUntilSuccessful>
 
-            
-            
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="18000">
+                        <Sequence>
+                            <Condition ID="IsDetected" confidence="0.6"
+                                                        interest="cup"
+                                                        frames=""
+                                                        max_depth="2"
+                                                        max_entities="1"
+                                                        order="depth_nearest"/>
+                            <Action ID="ExtractHandoverAlignment" interest_class="cup" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
+                        </Sequence>
+                    </Timeout>
+                    <Inverter>
+                        <Action ID="Speak" say_text="I can't see it, please show it to me again or clearer"/>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure/>
+                    </Delay>
+                </Fallback>
+            </RetryUntilSuccessful>
 
-            <!-- <Delay delay_msec="140">
-                <Action ID="MoveToPredefined" pose="open" group_name="gripper"/>
+            <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x"/>
+            <Action ID="SetTorsoHeight" height="{torso_z_movement}"/>
+            <Action ID="MoveJoint" joint_name="arm_4_joint" joint_value="1.83" group_name=""/>
+            <Action ID="Speak" say_text="You can now leave me the bag"/>
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="close"/>
             </Delay>
-            <ReactiveSequence>
-                <RetryUntilSuccessful num_attempts="-1">
-                    <Condition ID="IsDetected" cam_frame="head_front_camera_rgb_optical_frame" confidence="0.6" frames="{frames}" interest="person" max_depth="5" max_entities="1" order="depth"/>
-                </RetryUntilSuccessful>
-                <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
-                <Action ID="LookAt" tf_frame="person_0_filtered" />
-            </ReactiveSequence>
-            <Delay delay_msec="140">
-                <Action ID="MoveToPredefined" pose="close" group_name="gripper"/>
-            </Delay>  -->
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="home"/>
+            </Delay>
+            <Action ID="Speak" say_text="Thank you for the bag"/>
+
+
+
+            <!-- CHECK THE JOINT VALUE -->
         </Sequence> 
     </BehaviorTree>
 </root>
