@@ -79,6 +79,14 @@ def generate_launch_description():
         parameters=[params_file]
     )
 
+    introduce_guest_node = Node(
+        package='cs4home_hri_challenge',
+        executable='introduce_guest_cognitive_module',
+        name='introduce_guest_cognitive_module',
+        namespace=namespace,
+        output='screen',
+        parameters=[params_file]
+    )
 
     ld = LaunchDescription()
     ld.add_action(declare_namespace_cmd)
@@ -88,5 +96,6 @@ def generate_launch_description():
     ld.add_action(greeting_guest_node)
     ld.add_action(describe_person_node)
     ld.add_action(grab_bag_node)
-    # ld.add_action(transport_bag_node)
+    ld.add_action(transport_bag_node)
+    ld.add_action(introduce_guest_node)
     return ld

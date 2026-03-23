@@ -107,6 +107,7 @@ install(TARGETS
   describe_person_cognitive_module
   grab_bag_cognitive_module
   transport_bag_cognitive_module
+  introduce_guest_cognitive_module
   DESTINATION lib/${PROJECT_NAME}
 )
 

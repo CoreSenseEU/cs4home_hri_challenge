@@ -8,17 +8,110 @@
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Action ID="EnableDetectByIdentity" enable="true"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <ReactiveFallback>                                
+                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                               target_identity="host" 
+                                               confidence="0.6" 
+                                               interest="person" 
+                                               max_depth="3" 
+                                               max_entities="1" 
+                                               order="depth_nearest"/>
+                    <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
+                </ReactiveFallback>
+            </RetryUntilSuccessful>
+            <!-- do a look at host -->
+            <Action ID="LookAt" tf_frame="{best_detection}"/>
+            <RetryUntilSuccessful num_attempts="-1">                                
+                <Condition ID="IsDetected" best_detection="{best_detection}"
+                                            confidence="0.6" 
+                                            interest="person" 
+                                            max_depth="3" 
+                                            max_entities="1" 
+                                            target_identity="{host}"
+                                            order="depth_nearest"/>
+            </RetryUntilSuccessful>
             <Action ID="GetAttendedGuest"
                     guest_attended="{guest_attending}"/>
             <Action ID="GetGuestInfo"
                     guest_attending_id="{guest_attending}"
-                    guest_attending="false"
-                    guest_name="{guest_name}"
-                    guest_drink="{guest_drink}"
-                    guest_description="{guest_description}"/>
-            <Action ID="Speak" say_text="An the other guest is" param="{guest_name}, "/>
-            <Action ID="Speak" say_text=" " param="{guest_description}"/>
-            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
+                    guest_name="{guest_name2}"
+                    guest_drink="{guest_drink2}"
+                    guest_description="{guest_description2}"/>
+            <Action ID="Speak" say_text="Hi" param="{h_name}"/>
+            <Action ID="Speak" say_text=" this is" param="{guest_name2}"/>
+            <Action ID="Speak" say_text=" " param="{guest_description2}"/>
+            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}"/>
+            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
+            <Action ID="EnableDetectByIdentity" enable="false"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <ReactiveFallback>
+                <Condition ID="IsDetected" confidence="0.6"
+                    interest="person"
+                    max_depth="0.5" 
+                    max_entities="2"
+                    person_id="{guest_color_id_1}"
+                    order="color"
+                    best_detection="{best_detection}"/>
+
+                <Action ID="MoveAlongAxis" 
+                        speed="0.5"
+                        distance="6.28"
+                        axis="z"/>
+            </ReactiveFallback>
+            <Action ID="Speak" say_text=" By the way" param="{guest_name2}"/>
+            <Action ID="Speak" say_text="our host" param="{h_name}"/>
+            <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Action ID="EnableDetectByIdentity" enable="true"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <ReactiveFallback>                                
+                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                               target_identity="guestone" 
+                                               confidence="0.6" 
+                                               interest="person" 
+                                               max_depth="3" 
+                                               max_entities="1" 
+                                               order="depth_nearest"/>
+                    <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
+                </ReactiveFallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}"/>
+            <Action ID="GetGuestInfo"
+                    guest_attending_id="guest1"
+                    guest_name="{guest_name1}"
+                    guest_drink="{guest_drink1}"
+                    guest_description="{guest_description1}"/>
+            <Action ID="LookAt" tf_frame="{best_detection}"/>
+            <Action ID="Speak" say_text="Hi" param="{guest_name1}"/>
+            <Action ID="Speak" say_text=" this is" param="{guest_name2}"/>
+            <Action ID="Speak" say_text=" " param="{guest_description2}"/>
+            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}"/>
+            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
+            <Action ID="EnableDetectByIdentity" enable="false"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <ReactiveFallback>
+                <Condition ID="IsDetected" confidence="0.6"
+                    interest="person"
+                    max_depth="0.5" 
+                    max_entities="2"
+                    person_id="{guest_color_id_1}"
+                    order="color"
+                    best_detection="{best_detection}"/>
+
+                <Action ID="MoveAlongAxis" 
+                        speed="0.5"
+                        distance="6.28"
+                        axis="z"/>
+            </ReactiveFallback>
+            <Action ID="LookAt" tf_frame="{best_detection}"/>
+            <Action ID="Speak" say_text=" By the way" param="{guest_name2}"/>
+            <Action ID="Speak" say_text="our guest" param="{guest_name1}"/>
+            <Action ID="Speak" say_text="enjoys" param="{guest_drink1}"/>
         </Sequence> 
     </BehaviorTree>
 </root>

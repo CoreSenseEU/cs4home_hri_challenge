@@ -12,6 +12,9 @@ public:
     this->declare_parameter<std::string>("bt_name");
     this->declare_parameter<std::vector<std::string>>("on_success_transition", {""});
     this->declare_parameter<std::vector<std::string>>("waypoints_names", std::vector<std::string>{});
+    this->declare_parameter<std::vector<double>>("waypoints.entrance", {});
+    this->declare_parameter<std::vector<double>>("waypoints.party", {});
+    this->declare_parameter<std::vector<double>>("waypoints.guest_confirmation", {});
     RCLCPP_INFO(this->get_logger(), "IntroduceGuestCM initialized");
   }
 };

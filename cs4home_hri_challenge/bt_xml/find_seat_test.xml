@@ -1,0 +1,44 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                          manipulation_frame="{man_frame}"
+                                          host_name="{h_name}"
+                                          host_drink="{h_drink}"
+                                          current_guest="{n}"
+                                          attention_home="{attention_home}" />
+            <Sequence>
+                <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
+                <RetryUntilSuccessful num_attempts="-1">
+                    <ReactiveFallback>
+                        <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
+                        <Sequence>
+                            <Action ID="ActivationControl" deactivate="true" node_name="attention_server"/>
+                            <Action ID="Pan" period="20.0" range="45" pitch_angle="0"/>
+                        </Sequence>
+                    </ReactiveFallback>
+                </RetryUntilSuccessful>
+                <Action ID="LookAt" tf_frame="{chair_frame}"/>
+                <!-- this is not workinng, try again -->
+                 <Action ID="CheckPolicy" question="<__media__>
+                                                    Identify an available seat or free
+                                                    space to sit in the room. Provide a highly descriptive, natural-language
+                                                    sentence to guide a person blindly to
+                                                    that location. You must mention the
+                                                    specific type of seat, its exact
+                                                    position on the floor, and its spatial
+                                                    relationship (e.g., 'to the left of',
+                                                    'to the right of', 'between') relative
+                                                    to at least two distinct nearby
+                                                    objects. Do NOT output JSON, bullet
+                                                    points, lists, or bounding boxes.
+                                                    Return ONE single sentence in natural
+                                                    language only."
+                                        output_text="{description}"
+                                        image_topic="/all_perceptions"/>              
+                <Action ID="Speak" say_text="So, you can sit at" param="{description}"/>
+            </Sequence>
+        </Sequence>
+    </BehaviorTree>
+</root>

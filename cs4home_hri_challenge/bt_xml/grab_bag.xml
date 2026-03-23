@@ -2,24 +2,38 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <!-- <Action ID="SwitchYoloModel" model="bags.pt"/>  if uncomment then change cup to bag in the IsDetected node-->
-            <Action ID="PlayMotionPredefined" motion_name="open"/>
             <Action ID="InitReceptionist" cam_frame="{cam_frame}"
                                           manipulation_frame="{man_frame}"
                                           host_name="{h_name}"
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false"/>
+            <!-- <Action ID="GetModelPath" model="bags.pt" model_path="{bags_model_path}"/> -->
+            <!-- <Action ID="SwitchYoloModel" model="{bags_model_path}"/>  if uncomment then change cup to bag in the IsDetected node-->
+            <Action ID="PlayMotionPredefined" motion_name="open"/>
 
             <RetryUntilSuccessful num_attempts="-1">
-                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                <Condition ID="IsDetected" best_detection="{best_detection}"
+                                           confidence="0.6"
+                                           interest="person"
+                                           frames=""
+                                           max_depth="3"
+                                           max_entities="1"
+                                           order="depth_nearest"/>
             </RetryUntilSuccessful>
             <Action ID="LookAt" tf_frame="{best_detection}"/> 
             <RetryUntilSuccessful num_attempts="-1">
                 <Sequence>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">  
-                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest"/>
+                            <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                        confidence="0.6"
+                                                        interest="person"
+                                                        frames=""
+                                                        max_depth="3"
+                                                        max_entities="1"
+                                                        order="depth_nearest"/>
                         </RetryUntilSuccessful>
                         <Action ID="LookAt" tf_frame="{best_detection}"/> 
                         <Action ID="Speak" say_text="So the host" param="{h_name}"/>
@@ -46,13 +60,12 @@
                 <Fallback>
                     <Timeout msec="18000">
                         <Sequence>
-                            <Condition ID="IsDetected" confidence="0.6"
-                                                        interest="cup"
-                                                        frames=""
-                                                        max_depth="2"
-                                                        max_entities="1"
+                            <Condition ID="IsDetected" confidence="0.4"
+                                                        interest="cell phone"
+                                                        max_depth="3"
+                                                        max_entities="4"
                                                         order="depth_nearest"/>
-                            <Action ID="ExtractHandoverAlignment" interest_class="cup" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
+                            <Action ID="ExtractHandoverAlignment" interest_class="cell phone" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
                         </Sequence>
                     </Timeout>
                     <Inverter>

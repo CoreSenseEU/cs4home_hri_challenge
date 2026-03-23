@@ -9,7 +9,21 @@
                                           current_guest="{n}"
                                           attention_home="{attention_home}" 
                                           /> 
-            <Action ID="Speak" param="{h_name}" say_text=""/>
+
+            <!-- maybe add a move_to follow_ready location? -->
+            <Action ID="EnableDetectByIdentity" enable="false"/>
+            <Action ID="Speak" param="{h_name}" say_text="Heey "/>
+            <Action ID="Speak" param="" say_text="I have something for you, can you come here please?"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" 
+                    confidence="0.6" 
+                    interest="person"
+                    max_depth="3.0" 
+                    max_entities="2"
+                    order="depth"
+                    best_detection="{best_detection}"/>
+            </RetryUntilSuccessful>
+            <Action ID="Speak" param="{h_name}" say_text="Hi "/>
             <Action ID="Speak" param="" say_text="Where do you want to drop the bag?"/>
             <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end "/>
             <RetryUntilSuccessful num_attempts="-1">
@@ -25,6 +39,8 @@
                                                         order="depth"
                                                         best_detection="{best_detection}"/>
                             </RetryUntilSuccessful>
+                            <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
+                            <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{filtered_frame}"/> -->
                             <Action ID="RemoveStringPrefix" string_to_remove="{best_detection}" prefix="person_" result="{id}"/>
                             <Action ID="SetPersistentId" id="{id}"/>
                             <Action ID="LookAt" tf_frame="{best_detection}"/>
@@ -36,17 +52,20 @@
                             <Action ID="FollowEntity" camera_frame="head_front_camera_optical_frame"
                                                     distance_tolerance="0.2"
                                                     frame_to_follow="{best_detection}"
-                                                    x_axis_max="{max_x}"
-                                                    x_axis_min="{min_x}"
-                                                    y_axis_max="{max_y}"
-                                                    y_axis_min="{min_y}"/>
+                                                    x_axis_max="20.0"
+                                                    x_axis_min="-20.0"
+                                                    y_axis_max="20.0"
+                                                    y_axis_min="-20.0"/>
                         </ReactiveSequence>
                         <Action ID="Speak" param="" say_text="have we arrived to the destination?"/>
                     </Fallback>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" confidence="0.3" interest="person" max_depth="2.5" max_entities="1" order="color"/>
+                            <Condition ID="IsDetected" best_detection="{best_detection}" cam_frame="head_front_camera_optical_frame" confidence="0.3" interest="person" max_depth="2.5" max_entities="1" order="color"/>
                         </RetryUntilSuccessful>
+                        <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
+                        <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{best_detection}"/> -->
+                        <Action ID="LookAt" tf_frame="{best_detection}"/>
                         <ForceSuccess>
                             <Action ID="GoalPublisher" 
                             camera_frame="head_front_camera_optical_frame"
