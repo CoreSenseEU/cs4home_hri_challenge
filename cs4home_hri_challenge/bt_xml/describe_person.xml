@@ -45,7 +45,7 @@
             <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
             <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
             <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <!-- <ReactiveFallback>
+            <ReactiveFallback>
                 <Condition ID="IsDetected" confidence="0.6"
                     interest="person"
                     max_depth="0.5" 
@@ -58,7 +58,7 @@
                         speed="0.5"
                         distance="6.28"
                         axis="z"/>
-            </ReactiveFallback> -->
+            </ReactiveFallback>
             <Condition ID="IsDetected" confidence="0.6"
                     interest="person"
                     max_depth="0.5" 

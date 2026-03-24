@@ -109,14 +109,24 @@
             </Switch2>
 
             <RetryUntilSuccessful num_attempts="-1">
-                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                           confidence="0.6"
-                                           interest="person"
-                                           frames=""
-                                           max_depth="3"
-                                           max_entities="1"
-                                           order="depth_nearest"
-                                           target_identity="{guestid}"/>
+                <Fallback>
+                    <Timeout msec="5000">
+                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                   confidence="0.6"
+                                                   interest="person"
+                                                   frames=""
+                                                   max_depth="3"
+                                                   max_entities="1"
+                                                   order="depth_nearest"
+                                                   target_identity="{guestid}"/>
+                    </Timeout>
+                    <Inverter>
+                        <Action ID="Speak" say_text="I think I lost your face would you look at me in the eye or come closer?"/>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure/>
+                    </Delay>
+                </Fallback>
             </RetryUntilSuccessful>
 
             <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->

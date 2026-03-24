@@ -1,10 +1,11 @@
 /**:
   ros__parameters:
-    waypoints_names: ["entrance", "party", "guest_confirmation"]
+    waypoints_names: ["entrance", "party", "guest_confirmation", "follow_ready"]
     waypoints: # [x, y, yaw] only 3 numbers!!
       entrance: [0.080, -0.061, -2.318]
       party: [3.636, 0.486, 0.14]
       guest_confirmation: [3.636, 0.486, 0.14]
+      follow_ready: [3.795, 0.445, 1.691]
 
 hri_challenge_master:
   ros__parameters:
@@ -44,8 +45,8 @@ greeting_guest_cognitive_module:
     bt_name: 'greeting_guest.xml'
     # New completion topic for flow management
     transition_output:
-      topics: ['greeting_guest_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['greeting_guest_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
 
 
 find_seat_cognitive_module:
@@ -71,8 +72,8 @@ find_seat_cognitive_module:
     - remove_guest_attended_bt_node
     bt_name: 'find_seat.xml'
     transition_output:
-      topics: ['find_seat_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['find_seat_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
 
 
 describe_person_cognitive_module:
@@ -95,8 +96,8 @@ describe_person_cognitive_module:
     - enable_detect_by_identity_bt_node
     bt_name: 'describe_person.xml'
     transition_output:
-      topics: ['describe_person_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['describe_person_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
 
 
 grab_bag_cognitive_module:
@@ -122,8 +123,8 @@ grab_bag_cognitive_module:
     - activation_control_bt_node
     bt_name: 'grab_bag.xml'
     transition_output:
-      topics: ['grab_bag_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['grab_bag_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
 
 
 transport_bag_cognitive_module:
@@ -150,8 +151,8 @@ transport_bag_cognitive_module:
     - enable_detect_by_identity_bt_node
     bt_name: 'transport_bag.xml'
     transition_output:
-      topics: ['transport_bag_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['transport_bag_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
 
 
 introduce_guest_cognitive_module:
@@ -182,5 +183,5 @@ introduce_guest_cognitive_module:
     - move_along_axis_bt_node
     bt_name: 'introduce_guest.xml'
     transition_output:
-      topics: ['introduce_guest_cognitive_module/completion']
-      types: ['std_msgs/msg/Bool']
+      topics: ['introduce_guest_cognitive_module/completion', 'bt_status']
+      types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']

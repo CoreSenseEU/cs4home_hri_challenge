@@ -112,6 +112,8 @@
             <Action ID="Speak" say_text=" By the way" param="{guest_name2}"/>
             <Action ID="Speak" say_text="our guest" param="{guest_name1}"/>
             <Action ID="Speak" say_text="enjoys" param="{guest_drink1}"/>
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
         </Sequence> 
     </BehaviorTree>
 </root>

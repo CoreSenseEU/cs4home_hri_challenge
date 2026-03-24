@@ -15,6 +15,7 @@ public:
     this->declare_parameter<std::vector<double>>("waypoints.entrance", {});
     this->declare_parameter<std::vector<double>>("waypoints.party", {});
     this->declare_parameter<std::vector<double>>("waypoints.guest_confirmation", {});
+    this->declare_parameter<std::vector<double>>("waypoints.follow_ready", {});
     RCLCPP_INFO(this->get_logger(), "TransportBagCM initialized");
   }
 };

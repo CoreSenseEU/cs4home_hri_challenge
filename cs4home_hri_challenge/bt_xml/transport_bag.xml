@@ -7,51 +7,52 @@
                                           host_name="{h_name}"
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
-                                          attention_home="{attention_home}" 
+                                          attention_home="{attention_home}"
+                                          follow_ready_wp="{follow_ready}" 
                                           /> 
 
-            <!-- maybe add a move_to follow_ready location? -->
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
             <Action ID="EnableDetectByIdentity" enable="false"/>
             <Action ID="Speak" param="{h_name}" say_text="Heey "/>
             <Action ID="Speak" param="" say_text="I have something for you, can you come here please?"/>
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="{follow_ready}"/>
             <RetryUntilSuccessful num_attempts="-1">
-                <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" 
+                <Condition ID="IsDetected" 
                     confidence="0.6" 
                     interest="person"
                     max_depth="3.0" 
                     max_entities="2"
                     order="depth"
-                    best_detection="{best_detection}"/>
+                    best_detection="{best_detection_global}"/>
             </RetryUntilSuccessful>
             <Action ID="Speak" param="{h_name}" say_text="Hi "/>
             <Action ID="Speak" param="" say_text="Where do you want to drop the bag?"/>
             <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end "/>
+            <Action ID="RemoveStringPrefix" string_to_remove="{best_detection_global}" prefix="person_" result="{id}"/>
+            <Action ID="SetPersistentId" id="{id}"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Sequence>
                     <Fallback>
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">
-                                <Condition ID="IsDetected" cam_frame="head_front_camera_optical_frame" 
+                                <Condition ID="IsDetected" 
                                                         confidence="0.6" 
                                                         interest="person"
                                                         max_depth="3.0" 
                                                         max_entities="2"
-                                                        order="depth"
-                                                        best_detection="{best_detection}"/>
+                                                        order="depth"/>
                             </RetryUntilSuccessful>
                             <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
                             <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{filtered_frame}"/> -->
-                            <Action ID="RemoveStringPrefix" string_to_remove="{best_detection}" prefix="person_" result="{id}"/>
-                            <Action ID="SetPersistentId" id="{id}"/>
-                            <Action ID="LookAt" tf_frame="{best_detection}"/>
+                            <Action ID="LookAt" tf_frame="{best_detection_global}"/>
 
                             <Condition ID="IsEntityMoving" distance_tolerance="0.6"
                                                         robot_distance_to_person="1.5"
-                                                        frame="{best_detection}"
+                                                        frame="{best_detection_global}"
                                                         check_time="8.0"/>
                             <Action ID="FollowEntity" camera_frame="head_front_camera_optical_frame"
                                                     distance_tolerance="0.2"
-                                                    frame_to_follow="{best_detection}"
+                                                    frame_to_follow="{best_detection_global}"
                                                     x_axis_max="20.0"
                                                     x_axis_min="-20.0"
                                                     y_axis_max="20.0"
@@ -61,21 +62,37 @@
                     </Fallback>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected" best_detection="{best_detection}" cam_frame="head_front_camera_optical_frame" confidence="0.3" interest="person" max_depth="2.5" max_entities="1" order="color"/>
+                            <Condition ID="IsDetected"                                                         confidence="0.3" 
+                                                        interest="person" 
+                                                        max_depth="2.5" 
+                                                        max_entities="1" 
+                                                        order="color"/>
                         </RetryUntilSuccessful>
                         <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
                         <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{best_detection}"/> -->
-                        <Action ID="LookAt" tf_frame="{best_detection}"/>
+                        <Action ID="LookAt" tf_frame="{best_detection_global}"/>
                         <ForceSuccess>
                             <Action ID="GoalPublisher" 
                             camera_frame="head_front_camera_optical_frame"
                             distance_tolerance="0.2"
-                            frame_to_follow="{best_detection}"/>  
+                            frame_to_follow="{best_detection_global}"/>  
                         </ForceSuccess>
                         <Action ID="DialogConfirmation"/>
                     </ReactiveSequence>
                 </Sequence>
             </RetryUntilSuccessful>
+            <Action ID="Speak" param="" say_text="I will leave the bag here."/>
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="offer"/>
+            </Delay>
+            <Action ID="Speak" param="" say_text="Please take the bag"/>
+            <Delay delay_msec="1000">
+                <Action ID="PlayMotionPredefined" motion_name="open"/>
+            </Delay>
+            <Action ID="Speak" param="" say_text="Thank you"/>
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="home"/>
+            </Delay>    
         </Sequence> 
     </BehaviorTree>
 </root>

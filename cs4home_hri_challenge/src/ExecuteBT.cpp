@@ -24,6 +24,7 @@
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "diagnostic_msgs/msg/key_value.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
@@ -183,13 +184,36 @@ private:
   std::shared_ptr<rclcpp_cascade_lifecycle::CascadeLifecycleNode> cascade_node_;
   std::atomic_bool stop_requested_{false};
 
+  std::string getActiveNodeName() {
+    std::string active_node = tree_.rootNode()->name();
+    BT::applyRecursiveVisitor(tree_.rootNode(), [&active_node](BT::TreeNode* node) {
+      auto status = node->status();
+      if (status == BT::NodeStatus::RUNNING || 
+          status == BT::NodeStatus::SUCCESS || 
+          status == BT::NodeStatus::FAILURE) {
+        if (dynamic_cast<BT::ControlNode*>(node) == nullptr && 
+            dynamic_cast<BT::DecoratorNode*>(node) == nullptr) {
+          active_node = node->name();
+        }
+      }
+    });
+    return active_node;
+  }
+
  void runBehaviorTree() {
     tree_.haltTree();
     rclcpp::Rate rate(30);
     bool finish = false;
 
     while (!stop_requested_.load() && !finish && rclcpp::ok()) {
-      finish = tree_.rootNode()->executeTick() != BT::NodeStatus::RUNNING;
+      auto status = tree_.rootNode()->executeTick();
+      finish = status != BT::NodeStatus::RUNNING;
+      
+      auto kv_msg = std::make_shared<diagnostic_msgs::msg::KeyValue>();
+      kv_msg->key = getActiveNodeName();
+      kv_msg->value = std::to_string(static_cast<int>(status));
+      efferent_->publish(1, kv_msg);
+
       rclcpp::spin_some(cascade_node_->get_node_base_interface());
       rate.sleep();
     }

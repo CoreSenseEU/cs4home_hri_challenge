@@ -24,6 +24,7 @@ find_package(perception_system REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
 find_package(kb_msgs REQUIRED)
 find_package(configuration REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 set(dependencies
   cs4home_core
@@ -43,6 +44,7 @@ set(dependencies
   rclcpp_action
   kb_msgs
   configuration
+  diagnostic_msgs
 )
 
 
