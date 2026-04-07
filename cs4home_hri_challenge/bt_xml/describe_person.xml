@@ -10,7 +10,13 @@
                                           attention_home="{attention_home}" />
             <Action ID="Speak" say_text="Please follow me, i will get you to the  party"/>
             <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
+                    <Action ID="Speak" say_text="{explain_text}"/>
+                </Sequence>
+            </Fallback>
             <Action ID="EnableDetectByIdentity" enable="false"/>
             
             <RetryUntilSuccessful num_attempts="-1">
@@ -71,7 +77,13 @@
             <Action ID="Speak" say_text="our host" param="{h_name}"/>
             <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>
             <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
+                    <Action ID="Speak" say_text="{explain_text}"/>
+                </Sequence>
+            </Fallback>
         </Sequence> 
     </BehaviorTree>
 </root>

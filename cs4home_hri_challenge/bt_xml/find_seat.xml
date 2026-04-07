@@ -20,10 +20,19 @@
 
             <Sequence>
                 <RetryUntilSuccessful num_attempts="-1">
-                    <ReactiveFallback>
-                        <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
-                        <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
-                    </ReactiveFallback>
+                    <Fallback>
+                        <Timeout msec="30000">
+                            <ReactiveFallback>
+                                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
+                            </ReactiveFallback>
+                        </Timeout>
+                        <Sequence>
+                            <Action ID="Explain" question="IsSittable" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <AlwaysFailure/>
+                        </Sequence>
+                    </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
                 <Action ID="PointAt" tf_frame="{chair_frame}" 
@@ -39,10 +48,19 @@
 
             <Sequence>
                 <RetryUntilSuccessful num_attempts="-1">
-                    <ReactiveFallback>
-                        <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
-                        <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
-                    </ReactiveFallback>
+                    <Fallback>
+                        <Timeout msec="30000">
+                            <ReactiveFallback>
+                                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
+                            </ReactiveFallback>
+                        </Timeout>
+                        <Sequence>
+                            <Action ID="Explain" question="IsSittable" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <AlwaysFailure/>
+                        </Sequence>
+                    </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
                 <Action ID="CheckPolicy" question="<__media__>

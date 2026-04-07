@@ -37,7 +37,8 @@ using namespace std::chrono_literals;
  * @class ExecuteBT
  * @brief Core component execute the emergency action behaviour.
  */
-class ExecuteBT : public cs4home_core::Core {
+class ExecuteBT : public cs4home_core::Core
+{
 public:
   RCLCPP_SMART_PTR_DEFINITIONS(ExecuteBT)
 
@@ -49,7 +50,8 @@ public:
    */
 
   explicit ExecuteBT(rclcpp_lifecycle::LifecycleNode::SharedPtr parent)
-      : Core("execute_bt", parent) {
+  : Core("execute_bt", parent)
+  {
     RCLCPP_INFO(parent_->get_logger(), "Core created: [ExecuteBT]");
   }
 
@@ -57,19 +59,22 @@ public:
    * @brief Configures the ExecuteBT component.
    * @return True if configuration is successful.
    */
-  bool configure() override {
+  bool configure() override
+  {
     RCLCPP_INFO(parent_->get_logger(), "Configuring CORE!");
 
     std::vector<std::string> plugin_list;
     parent_->get_parameter("plugin_list", plugin_list);
     parent_->get_parameter("bt_name", bt_name_);
 
-    for (const auto &plugin : plugin_list) {
+    for (const auto & plugin : plugin_list) {
       try {
         RCLCPP_INFO(parent_->get_logger(), "Loading plugin: %s", plugin.c_str());
         factory_.registerFromPlugin(loader_.getOSName(plugin));
-      } catch (const std::exception &e) {
-        RCLCPP_ERROR(parent_->get_logger(), "Failed to load plugin '%s': %s", plugin.c_str(), e.what());
+      } catch (const std::exception & e) {
+        RCLCPP_ERROR(
+          parent_->get_logger(), "Failed to load plugin '%s': %s", plugin.c_str(),
+          e.what());
       }
     }
 
@@ -83,9 +88,9 @@ public:
 
     rclcpp::NodeOptions options;
     options.context(context);
-    
+
     std::string bt_node_name = std::string(parent_->get_name()) + "_bt_node";
-    
+
     cascade_node_ = std::make_shared<rclcpp_cascade_lifecycle::CascadeLifecycleNode>(
       bt_node_name, options);
 
@@ -97,13 +102,13 @@ public:
       parent_->get_parameter("waypoints_names", wp_names);
     }
 
-    if(!cascade_node_->has_parameter("waypoints_names")) {
+    if (!cascade_node_->has_parameter("waypoints_names")) {
       cascade_node_->declare_parameter("waypoints_names", wp_names);
-    } 
+    }
 
     cascade_node_->set_parameter(rclcpp::Parameter("waypoints_names", wp_names));
     // waypoints.<name>
-    for (const auto& wp : wp_names) {
+    for (const auto & wp : wp_names) {
       const std::string key = "waypoints." + wp;
       RCLCPP_INFO(parent_->get_logger(), "Copying waypoint parameter: %s", key.c_str());
 
@@ -112,16 +117,17 @@ public:
         parent_->get_parameter(key, wp_pos);
       }
 
-      if(!cascade_node_->has_parameter(key)) {
+      if (!cascade_node_->has_parameter(key)) {
         cascade_node_->declare_parameter(key, wp_pos);
       }
-      
+
       cascade_node_->set_parameter(rclcpp::Parameter(key, wp_pos));
     }
 
-    RCLCPP_INFO(parent_->get_logger(),
-                "Copied %zu waypoint(s) to BT node [%s]",
-                wp_names.size(), bt_node_name.c_str());
+    RCLCPP_INFO(
+      parent_->get_logger(),
+      "Copied %zu waypoint(s) to BT node [%s]",
+      wp_names.size(), bt_node_name.c_str());
 
     // 3) Activate after params are available
     cascade_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -141,7 +147,8 @@ public:
    *
    * @return True if activation is successful.
    */
-  bool activate() override {
+  bool activate() override
+  {
     stop_requested_.store(false);
     blackboard_ = BT::Blackboard::create();
     blackboard_->set("node", cascade_node_);
@@ -160,7 +167,8 @@ public:
    *
    * @return True to indicate successful deactivation.
    */
-  bool deactivate() override {
+  bool deactivate() override
+  {
     stop_requested_.store(true);
     tree_.haltTree();
     if (bt_thread_.joinable()) {
@@ -184,23 +192,28 @@ private:
   std::shared_ptr<rclcpp_cascade_lifecycle::CascadeLifecycleNode> cascade_node_;
   std::atomic_bool stop_requested_{false};
 
-  std::string getActiveNodeName() {
+  std::string getActiveNodeName()
+  {
     std::string active_node = tree_.rootNode()->name();
-    BT::applyRecursiveVisitor(tree_.rootNode(), [&active_node](BT::TreeNode* node) {
-      auto status = node->status();
-      if (status == BT::NodeStatus::RUNNING || 
-          status == BT::NodeStatus::SUCCESS || 
-          status == BT::NodeStatus::FAILURE) {
-        if (dynamic_cast<BT::ControlNode*>(node) == nullptr && 
-            dynamic_cast<BT::DecoratorNode*>(node) == nullptr) {
-          active_node = node->name();
+    BT::applyRecursiveVisitor(
+      tree_.rootNode(), [&active_node](BT::TreeNode * node) {
+        auto status = node->status();
+        if (status == BT::NodeStatus::RUNNING ||
+        status == BT::NodeStatus::SUCCESS ||
+        status == BT::NodeStatus::FAILURE)
+        {
+          if (dynamic_cast<BT::ControlNode *>(node) == nullptr &&
+          dynamic_cast<BT::DecoratorNode *>(node) == nullptr)
+          {
+            active_node = node->name();
+          }
         }
-      }
-    });
+      });
     return active_node;
   }
 
- void runBehaviorTree() {
+  void runBehaviorTree()
+  {
     tree_.haltTree();
     rclcpp::Rate rate(30);
     bool finish = false;
@@ -208,7 +221,7 @@ private:
     while (!stop_requested_.load() && !finish && rclcpp::ok()) {
       auto status = tree_.rootNode()->executeTick();
       finish = status != BT::NodeStatus::RUNNING;
-      
+
       auto kv_msg = std::make_shared<diagnostic_msgs::msg::KeyValue>();
       kv_msg->key = getActiveNodeName();
       kv_msg->value = std::to_string(static_cast<int>(status));
@@ -225,8 +238,8 @@ private:
     auto msg = std::make_shared<std_msgs::msg::Bool>();
     msg->data = 1;
     efferent_->publish(0, msg);
-    
-  
+
+
   }
 };
 

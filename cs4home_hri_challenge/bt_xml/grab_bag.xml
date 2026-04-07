@@ -69,7 +69,11 @@
                         </Sequence>
                     </Timeout>
                     <Inverter>
-                        <Action ID="Speak" say_text="I can't see it, please show it to me again"/>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <Action ID="Speak" say_text="I can't see the bag, could you please show it to me?"/>
+                        </Sequence>
                     </Inverter>
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>

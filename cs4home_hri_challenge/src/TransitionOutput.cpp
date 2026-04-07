@@ -29,7 +29,8 @@
  * @brief Manages sound output by creating publishers for specified topics and
  *        providing a method to publish sound messages.
  */
-class TransitionOutput : public cs4home_core::Efferent {
+class TransitionOutput : public cs4home_core::Efferent
+{
 public:
   RCLCPP_SMART_PTR_DEFINITIONS(TransitionOutput)
 
@@ -40,7 +41,8 @@ public:
    * AudioOutput instance.
    */
   explicit TransitionOutput(rclcpp_lifecycle::LifecycleNode::SharedPtr parent)
-      : Efferent("transition_output", parent) {
+  : Efferent("transition_output", parent)
+  {
     RCLCPP_INFO(parent_->get_logger(), "Efferent created: [TransitionOutput]");
   }
 
@@ -54,7 +56,7 @@ public:
    *
    * @return True if all publishers are created successfully.
    */
-  bool configure() { return Efferent::configure(); }
+  bool configure() {return Efferent::configure();}
 };
 
 /// Registers the TransitionOutput component with the ROS 2 class loader

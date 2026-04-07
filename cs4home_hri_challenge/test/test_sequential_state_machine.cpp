@@ -44,25 +44,27 @@ TEST_F(SequentialStateMachineTest, TestFlowConfigParsing)
 {
   // Create a test node to verify parameter parsing
   auto node = rclcpp::Node::make_shared("test_flow_config");
-  
+
   // Declare test parameters
   node->declare_parameter("flows", std::vector<std::string>{"main_flow"});
-  node->declare_parameter("main_flow.initial_states", 
-                         std::vector<std::string>{"module_a"});
-  node->declare_parameter("main_flow", 
-                         std::vector<std::string>{"module_a", "module_b", "module_c"});
-  
+  node->declare_parameter(
+    "main_flow.initial_states",
+    std::vector<std::string>{"module_a"});
+  node->declare_parameter(
+    "main_flow",
+    std::vector<std::string>{"module_a", "module_b", "module_c"});
+
   // Verify parameters can be retrieved
   std::vector<std::string> flows;
   ASSERT_TRUE(node->get_parameter("flows", flows));
   EXPECT_EQ(flows.size(), 1);
   EXPECT_EQ(flows[0], "main_flow");
-  
+
   std::vector<std::string> initial_states;
   ASSERT_TRUE(node->get_parameter("main_flow.initial_states", initial_states));
   EXPECT_EQ(initial_states.size(), 1);
   EXPECT_EQ(initial_states[0], "module_a");
-  
+
   std::vector<std::string> all_modules;
   ASSERT_TRUE(node->get_parameter("main_flow", all_modules));
   EXPECT_EQ(all_modules.size(), 3);
@@ -75,23 +77,23 @@ TEST_F(SequentialStateMachineTest, TestFlowConfigParsing)
 TEST_F(SequentialStateMachineTest, TestSequentialAdvancement)
 {
   std::vector<std::string> modules = {"module_a", "module_b", "module_c"};
-  
+
   // Simulate finding current module and getting next
   std::string current = "module_a";
   auto it = std::find(modules.begin(), modules.end(), current);
   ASSERT_NE(it, modules.end());
-  
+
   size_t current_idx = std::distance(modules.begin(), it);
   size_t next_idx = (current_idx + 1) % modules.size();
-  
+
   EXPECT_EQ(modules[next_idx], "module_b");
-  
+
   // Test wrapping around
   current = "module_c";
   it = std::find(modules.begin(), modules.end(), current);
   current_idx = std::distance(modules.begin(), it);
   next_idx = (current_idx + 1) % modules.size();
-  
+
   EXPECT_EQ(modules[next_idx], "module_a");  // Should wrap to first
 }
 
@@ -99,38 +101,38 @@ TEST_F(SequentialStateMachineTest, TestSequentialAdvancement)
 TEST_F(SequentialStateMachineTest, TestCompletionMessageFormat)
 {
   auto node = rclcpp::Node::make_shared("test_completion");
-  
+
   std::vector<std_msgs::msg::Bool::SharedPtr> received_messages;
-  
+
   auto sub = node->create_subscription<std_msgs::msg::Bool>(
     "/test_module/completion", 10,
     [&received_messages](std_msgs::msg::Bool::SharedPtr msg) {
       received_messages.push_back(msg);
     });
-  
+
   auto pub = node->create_publisher<std_msgs::msg::Bool>("/test_module/completion", 10);
-  
+
   // Wait for subscription to be established
   rclcpp::sleep_for(std::chrono::milliseconds(100));
-  
+
   // Publish success
   auto success_msg = std::make_shared<std_msgs::msg::Bool>();
   success_msg->data = true;
   pub->publish(*success_msg);
-  
+
   // Spin to process first message
   rclcpp::spin_some(node);
   rclcpp::sleep_for(std::chrono::milliseconds(50));
-  
+
   // Publish failure
   auto failure_msg = std::make_shared<std_msgs::msg::Bool>();
   failure_msg->data = false;
   pub->publish(*failure_msg);
-  
+
   // Spin to process second message
   rclcpp::spin_some(node);
   rclcpp::sleep_for(std::chrono::milliseconds(50));
-  
+
   ASSERT_GE(received_messages.size(), 1);  // At least one message received
   if (received_messages.size() >= 1) {
     EXPECT_TRUE(received_messages[0]->data);   // Success
@@ -146,17 +148,17 @@ TEST_F(SequentialStateMachineTest, TestActivateModuleHelper)
   // Test that we can create a lifecycle change state request
   auto req = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
   req->transition.id = lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE;
-  
+
   EXPECT_EQ(req->transition.id, lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 }
 
-// Test: Module deactivation helper  
+// Test: Module deactivation helper
 TEST_F(SequentialStateMachineTest, TestDeactivateModuleHelper)
 {
   // Test that we can create a lifecycle change state request for deactivation
   auto req = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
   req->transition.id = lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE;
-  
+
   EXPECT_EQ(req->transition.id, lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 }
 

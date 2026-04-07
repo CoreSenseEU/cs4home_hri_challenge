@@ -11,7 +11,13 @@
             <Action ID="LookAt" tf_frame="{attention_home}"/>                                        
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
+                    <Action ID="Speak" say_text="{explain_text}"/>
+                </Sequence>
+            </Fallback>
             <Action ID="EnableDetectByIdentity" enable="false"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
@@ -28,7 +34,11 @@
                         </ReactiveFallback>
                     </Timeout>
                     <Inverter>
-                        <Action ID="Speak" say_text="I can't see you, can you please stand in front of me?"/>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <Action ID="Speak" say_text="Could you please come closer?"/>
+                        </Sequence>
                     </Inverter>
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>
@@ -121,7 +131,11 @@
                                                    target_identity="{guestid}"/>
                     </Timeout>
                     <Inverter>
-                        <Action ID="Speak" say_text="I think I lost your face would you look at me in the eye or come closer?"/>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <Action ID="Speak" say_text="I think I lost your face would you look at me in the eye or come closer?"/>
+                        </Sequence>
                     </Inverter>
                     <Delay delay_msec="3000">
                         <AlwaysFailure/>
