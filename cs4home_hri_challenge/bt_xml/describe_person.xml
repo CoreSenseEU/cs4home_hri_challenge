@@ -65,14 +65,14 @@
                         distance="6.28"
                         axis="z"/>
             </ReactiveFallback>
-            <Condition ID="IsDetected" confidence="0.6"
+            <!-- <Condition ID="IsDetected" confidence="0.6"
                     interest="person"
                     max_depth="0.5" 
                     max_entities="2"
                     person_id="{guest_color_id_1}"
                     order="color"
                     best_detection="{best_detection}"/>
-            <Action ID="LookAt" tf_frame="{best_detection}"/>
+            <Action ID="LookAt" tf_frame="{best_detection}"/> fix this ?--> 
             <Action ID="Speak" say_text=" By the way" param="{guest_name}"/>
             <Action ID="Speak" say_text="our host" param="{h_name}"/>
             <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>

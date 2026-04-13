@@ -11,14 +11,16 @@
             <Action ID="LookAt" tf_frame="{attention_home}"/>                                        
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
-            <Fallback>
+            <!-- <Fallback>
                 <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
                 <Sequence>
                     <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
                     <Action ID="Speak" say_text="{explain_text}"/>
                 </Sequence>
-            </Fallback>
+            </Fallback> -->
             <Action ID="EnableDetectByIdentity" enable="false"/>
+            <Action ID="Speak" say_text="DEBUG: BEFORE FIRST PAN TO CHECK THE PERSON"/>
+
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
                     <Timeout msec="18000">
@@ -30,7 +32,7 @@
                                                         max_entities="1"
                                                         order="depth_nearest"
                                                         best_detection="{best_detection}"/>
-                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
+                            <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
                         </ReactiveFallback>
                     </Timeout>
                     <Inverter>
@@ -45,6 +47,7 @@
                     </Delay>
                 </Fallback>
             </RetryUntilSuccessful>
+            <Action ID="Speak" say_text="DEBUG: AFTER THE FIRST PAN TO CHECK THE PERSON"/>
             <Action ID="LookAt" tf_frame="{best_detection}"/> 
             <Timeout msec="3000">  <!-- ensure we are looking at the person for a bit -->
                 <RetryUntilSuccessful num_attempts="-1">
@@ -62,7 +65,7 @@
                 </RetryUntilSuccessful>
             </Timeout>
 
-            
+            <Action ID="Speak" say_text="DEBUG: BEFORE SWITCH AFTER THE LOOK AT "/>
             <Action ID="GetAttendedGuest" guest_attended="{guest_attending}"/>
             <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
             <Switch2 variable="{n}"  case_1="0" case_2="1" >
@@ -117,18 +120,25 @@
                     <SetBlackboard output_key="guestid" value="default"/>
                 </Sequence>
             </Switch2>
-
+            <Action ID="Speak" say_text="DEBUG: AFTER THE SWITCH"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
-                    <Timeout msec="5000">
-                        <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                   confidence="0.6"
-                                                   interest="person"
-                                                   frames=""
-                                                   max_depth="3"
-                                                   max_entities="1"
-                                                   order="depth_nearest"
-                                                   target_identity="{guestid}"/>
+                    <Timeout msec="3000">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Fallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                        confidence="0.6"
+                                                        interest="person"
+                                                        frames=""
+                                                        max_depth="3"
+                                                        max_entities="1"
+                                                        order="depth_nearest"
+                                                        target_identity="{guestid}"/>
+                                <Inverter>                                                
+                                    <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                </Inverter>
+                            </Fallback>
+                        </RetryUntilSuccessful>
                     </Timeout>
                     <Inverter>
                         <Sequence>
@@ -149,31 +159,40 @@
                     <SequenceStar>
                         <Sequence>
                             <ReactiveSequence>
-                                <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                               confidence="0.6"
-                                                               interest="person"
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>  
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
-                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
                                 <Action ID="Speak" say_text="What's your name?"/>
                             </ReactiveSequence>
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                               confidence="0.6"
-                                                               interest="person"
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>  
                                 </RetryUntilSuccessful>
                                 <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
@@ -182,14 +201,19 @@
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                               confidence="0.6"
-                                                               interest="person"
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -199,14 +223,19 @@
                             
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                               confidence="0.6"
-                                                               interest="person"
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -216,14 +245,19 @@
                         
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                               confidence="0.6"
-                                                               interest="person"
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -234,14 +268,19 @@
 
                             <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
-                                    <Condition ID="IsDetected" best_detection="{best_detection}" 
-                                                               confidence="0.6" 
-                                                               interest="person" 
-                                                               frames=""
-                                                               max_depth="3"
-                                                               max_entities="1"
-                                                               order="depth_nearest"
-                                                               target_identity="{guestid}"/>
+                                    <Fallback>
+                                        <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                    confidence="0.6"
+                                                                    interest="person"
+                                                                    frames=""
+                                                                    max_depth="3"
+                                                                    max_entities="1"
+                                                                    order="depth_nearest"
+                                                                    target_identity="{guestid}"/>
+                                        <Inverter>
+                                            <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                        </Inverter>
+                                    </Fallback>
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -254,14 +293,19 @@
                             <Action ID="Speak" say_text="What's your favorite drink?"/>
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           confidence="0.6"
-                                                           interest="person"
-                                                           frames=""
-                                                           max_depth="3"
-                                                           max_entities="1"
-                                                           order="depth_nearest"
-                                                           target_identity="{guestid}"/>
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                confidence="0.6"
+                                                                interest="person"
+                                                                frames=""
+                                                                max_depth="3"
+                                                                max_entities="1"
+                                                                order="depth_nearest"
+                                                                target_identity="{guestid}"/>
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                    </Inverter>
+                                </Fallback>
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -270,14 +314,19 @@
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           confidence="0.6"
-                                                           interest="person"
-                                                           frames=""
-                                                           max_depth="3"
-                                                           max_entities="1"
-                                                           order="depth_nearest"
-                                                           target_identity="{guestid}"/>
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                confidence="0.6"
+                                                                interest="person"
+                                                                frames=""
+                                                                max_depth="3"
+                                                                max_entities="1"
+                                                                order="depth_nearest"
+                                                                target_identity="{guestid}"/>
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                    </Inverter>
+                                </Fallback>
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -287,14 +336,19 @@
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           confidence="0.6"
-                                                           interest="person"
-                                                           frames=""
-                                                           max_depth="3"
-                                                           max_entities="1"
-                                                           order="depth_nearest"
-                                                           target_identity="{guestid}"/>
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                confidence="0.6"
+                                                                interest="person"
+                                                                frames=""
+                                                                max_depth="3"
+                                                                max_entities="1"
+                                                                order="depth_nearest"
+                                                                target_identity="{guestid}"/>
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                    </Inverter>
+                                </Fallback>
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
@@ -307,14 +361,19 @@
 
                         <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           confidence="0.6"
-                                                           interest="person"
-                                                           frames=""
-                                                           max_depth="3"
-                                                           max_entities="1"
-                                                           order="depth_nearest"
-                                                           target_identity="{guestid}"/>
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                confidence="0.6"
+                                                                interest="person"
+                                                                frames=""
+                                                                max_depth="3"
+                                                                max_entities="1"
+                                                                order="depth_nearest"
+                                                                target_identity="{guestid}"/>
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}"/>
+                                    </Inverter>
+                                </Fallback>
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
