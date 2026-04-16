@@ -58,13 +58,15 @@
 
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
-                    <Timeout msec="18000">
+                    <Timeout msec="4000">
                         <Sequence>
-                            <Condition ID="IsDetected" confidence="0.4"
-                                                        interest="cell phone"
-                                                        max_depth="3"
-                                                        max_entities="4"
-                                                        order="depth_nearest"/>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Condition ID="IsDetected" confidence="0.4"
+                                                            interest="cell phone"
+                                                            max_depth="3"
+                                                            max_entities="4"
+                                                            order="depth_nearest"/>
+                            </RetryUntilSuccessful>
                             <Action ID="ExtractHandoverAlignment" interest_class="cell phone" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
                         </Sequence>
                     </Timeout>

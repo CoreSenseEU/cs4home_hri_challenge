@@ -62,11 +62,12 @@
                     </Fallback>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected"                                                         confidence="0.3" 
+                            <Condition ID="IsDetected"            
+                                                        confidence="0.3" 
                                                         interest="person" 
                                                         max_depth="2.5" 
                                                         max_entities="1" 
-                                                        order="color"/>
+                                                        order="depth_nearest"/>
                         </RetryUntilSuccessful>
                         <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
                         <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{best_detection}"/> -->
