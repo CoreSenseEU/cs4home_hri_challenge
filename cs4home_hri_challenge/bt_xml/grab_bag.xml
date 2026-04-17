@@ -10,8 +10,6 @@
                                           attention_home="{attention_home}" />
             <Action ID="EnableDetectByIdentity" enable="false"/>
             <!-- <Action ID="GetModelPath" model="bags.pt" model_path="{bags_model_path}"/> -->
-            <!-- <Action ID="SwitchYoloModel" model="{bags_model_path}"/>  if uncomment then change cup to bag in the IsDetected node-->
-            <Action ID="PlayMotionPredefined" motion_name="open"/>
 
             <RetryUntilSuccessful num_attempts="-1">
                 <Condition ID="IsDetected" best_detection="{best_detection}"
@@ -56,34 +54,39 @@
                 </Sequence>
             </RetryUntilSuccessful>
 
-            <RetryUntilSuccessful num_attempts="-1">
-                <Fallback>
-                    <Timeout msec="18000">
-                        <Sequence>
-                            <Condition ID="IsDetected" confidence="0.4"
-                                                        interest="cell phone"
-                                                        max_depth="3"
-                                                        max_entities="4"
-                                                        order="depth_nearest"/>
-                            <Action ID="ExtractHandoverAlignment" interest_class="cell phone" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
-                        </Sequence>
-                    </Timeout>
-                    <Inverter>
-                        <Sequence>
-                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}"/>
-                            <Action ID="Speak" say_text="{explain_text}"/>
-                            <Action ID="Speak" say_text="I can't see the bag, could you please show it to me?"/>
-                        </Sequence>
-                    </Inverter>
-                    <Delay delay_msec="3000">
-                        <AlwaysFailure/>
-                    </Delay>
-                </Fallback>
-            </RetryUntilSuccessful>
+            <Action ID="SwitchYoloModel" model="/home/robotica/cs4home_ws/src/thirdparty/robocup24/robocup_bringup/models/bags.pt"/>  <!--if uncomment then change cup to bag in the IsDetected node -->
+            <Action ID="PlayMotionPredefined" motion_name="open"/>
+
+            <Delay delay_msec="2000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="18000">
+                            <Sequence>
+                                <Condition ID="IsDetected" confidence="0.4"
+                                                            interest="Bag"
+                                                            max_depth="3"
+                                                            max_entities="4"
+                                                            order="depth_nearest"/>
+                                <Action ID="ExtractHandoverAlignment" interest_class="Bag" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
+                            </Sequence>
+                        </Timeout>
+                        <Inverter>
+                            <Sequence>
+                                <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}"/>
+                                <Action ID="Speak" say_text="{explain_text}"/>
+                                <Action ID="Speak" say_text="I can't see the bag, could you please show it to me?"/>
+                            </Sequence>
+                        </Inverter>
+                        <Delay delay_msec="3000">
+                            <AlwaysFailure/>
+                        </Delay>
+                    </Fallback>
+                </RetryUntilSuccessful>
+            </Delay>
 
             <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x"/>
             <Action ID="SetTorsoHeight" height="{torso_z_movement}"/>
-            <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name=""/>
+            <!-- <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name=""/> -->
             <Action ID="Speak" say_text="You can now leave me the bag"/>
             <ForceSuccess>
                 <Delay delay_msec="2000">
@@ -91,10 +94,12 @@
                 </Delay>
             </ForceSuccess>
             <Action ID="Speak" say_text="Thanks! securing the bag!"/>
-            <Delay delay_msec="2000">
+            <!-- <Delay delay_msec="2000">
                 <Action ID="PlayMotionPredefined" motion_name="home"/>
-            </Delay>
+            </Delay> -->
             <Action ID="Speak" say_text="Bag secured!"/>
+            <Action ID="SwitchYoloModel" model="yolo11n.pt"/>  <!--if uncomment then change cup to bag in the IsDetected node -->
+            
 
             <!-- CHECK THE JOINT VALUE -->
         </Sequence> 
