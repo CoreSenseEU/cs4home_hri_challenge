@@ -8,7 +8,8 @@
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
-            <Action ID="LookAt" tf_frame="{attention_home}"/>                                        
+            <Action ID="LookAt" tf_frame="{attention_home}"/> 
+
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
             <Fallback>
@@ -19,7 +20,6 @@
                 </Sequence>
             </Fallback>
             <Action ID="EnableDetectByIdentity" enable="false"/>
-            <Action ID="Speak" say_text="DEBUG: BEFORE FIRST PAN TO CHECK THE PERSON"/>
 
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
@@ -47,7 +47,6 @@
                     </Delay>
                 </Fallback>
             </RetryUntilSuccessful>
-            <Action ID="Speak" say_text="DEBUG: AFTER THE FIRST PAN TO CHECK THE PERSON"/>
             <Action ID="LookAt" tf_frame="{best_detection}"/> 
             <Timeout msec="3000">  <!-- ensure we are looking at the person for a bit -->
                 <RetryUntilSuccessful num_attempts="-1">
@@ -65,21 +64,32 @@
                 </RetryUntilSuccessful>
             </Timeout>
 
-            <Action ID="Speak" say_text="DEBUG: BEFORE SWITCH AFTER THE LOOK AT "/>
             <Action ID="GetAttendedGuest" guest_attended="{guest_attending}"/>
             <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
             <Switch2 variable="{n}"  case_1="0" case_2="1" >
                 <Sequence>
                     <RetryUntilSuccessful num_attempts="-1">
-                        <ReactiveFallback>
-                            <Action ID="EnableDetectByIdentity" enable="true"/>
-                            <Sequence>
-                                <Action ID="StoreIdentityVector" identity="guestone"/>
-                                <Delay delay_msec="500">
-                                    <AlwaysFailure/>
-                                </Delay>
-                            </Sequence>
-                        </ReactiveFallback>
+                        <Fallback>
+                            <Timeout msec="10000">
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <ReactiveFallback>
+                                        <Action ID="EnableDetectByIdentity" enable="true"/>
+                                        <Sequence>
+                                            <Action ID="StoreIdentityVector" identity="guestone"/>
+                                            <Delay delay_msec="500">
+                                                <AlwaysFailure/>
+                                            </Delay>
+                                        </Sequence>
+                                    </ReactiveFallback>
+                                </RetryUntilSuccessful>
+                            </Timeout>
+                            <Inverter>
+                                <Action ID="Speak" say_text="I'm having trouble recognizing you, could you please come closer and look at me?"/>
+                            </Inverter>
+                            <Delay delay_msec="3000">
+                                <AlwaysFailure/>
+                            </Delay>
+                        </Fallback>
                     </RetryUntilSuccessful>
                     <SetBlackboard output_key="guestid" value="guestone"/>
                 </Sequence>
@@ -120,7 +130,6 @@
                     <SetBlackboard output_key="guestid" value="default"/>
                 </Sequence>
             </Switch2>
-            <Action ID="Speak" say_text="DEBUG: AFTER THE SWITCH"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Fallback>
                     <Timeout msec="3000">
@@ -384,9 +393,9 @@
                         </Sequence>
                     </SequenceStar>
             </RetryUntilSuccessful>
+            <Action ID="Speak" say_text="ok, good!"/>
             <RetryUntilSuccessful num_attempts="5">
                 <Sequence>
-                    <Action ID="Speak" say_text="Okey"/>
                     <Action ID="CheckPolicy" question="<__media__>
                                                         Start the answer with: 'the guest is'.
                                                         Describe the person in one single short natural sentence using only plain text.
@@ -410,9 +419,17 @@
                     <Action ID="Speak" say_text="So, " param="{description}"/>
                 </Sequence>
             </RetryUntilSuccessful>
-            <Action ID="StoreGuestInfo" guest_name="{name_value}"
-                                        guest_description="{description}"
-                                        guest_drink="{drink_value}"/>
+            <Fallback>
+                <Action ID="StoreGuestInfo" guest_name="{name_value}"
+                                            guest_description="{description}"
+                                            guest_drink="{drink_value}"/>
+                <Sequence>
+                    <Action ID="RemoveGuestFacts" guest_id="{guest_attending}"/>
+                    <Action ID="StoreGuestInfo" guest_name="{name_value}"
+                                                guest_description="Friendly and sharp"
+                                                guest_drink="{drink_value}"/>
+                </Sequence>
+            </Fallback>
         </Sequence>
     </BehaviorTree>
 </root>

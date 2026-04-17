@@ -63,7 +63,7 @@
                                                                 />
 
                 <Action ID="MoveAlongAxis" 
-                        speed="0.5"
+                        speed="0.3"
                         distance="6.28"
                         axis="z"/>
             </ReactiveFallback>
