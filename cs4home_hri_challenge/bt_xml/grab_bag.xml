@@ -82,7 +82,7 @@
                     </Delay>
                 </Fallback>
             </RetryUntilSuccessful>
-
+            <Action ID="Speak" say_text="Now, for safety, I will approach the bag but you will have to help me to complete the handover"/>
             <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x"/>
             <Action ID="SetTorsoHeight" height="{torso_z_movement}"/>
             <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name=""/>
