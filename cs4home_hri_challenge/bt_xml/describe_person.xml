@@ -51,28 +51,24 @@
             <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
             <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
             <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <ReactiveFallback>
-                <Condition ID="IsDetected" confidence="0.6"
-                    interest="person"
-                    max_depth="0.5" 
-                    max_entities="2"
-                    person_id="{guest_color_id_1}"
-                    order="color"
-                    best_detection="{best_detection}"/>
+                <Condition ID="IsDetected" best_detection="{best_detection}"
+                                                                confidence="0.6"
+                                                                interest="person"
+                                                                frames=""
+                                                                max_depth="1.0"
+                                                                max_entities="1"
+                                                                order="depth_nearest"
+                                                                />
 
                 <Action ID="MoveAlongAxis" 
-                        speed="0.5"
+                        speed="0.3"
                         distance="6.28"
                         axis="z"/>
             </ReactiveFallback>
-            <!-- <Condition ID="IsDetected" confidence="0.6"
-                    interest="person"
-                    max_depth="0.5" 
-                    max_entities="2"
-                    person_id="{guest_color_id_1}"
-                    order="color"
-                    best_detection="{best_detection}"/>
-            <Action ID="LookAt" tf_frame="{best_detection}"/> fix this ?--> 
+            <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.1"/>
+            <!-- <Action ID="LookAt" tf_frame="{best_detection}"/> -->
             <Action ID="Speak" say_text=" By the way" param="{guest_name}"/>
             <Action ID="Speak" say_text="our host" param="{h_name}"/>
             <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>

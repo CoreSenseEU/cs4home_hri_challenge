@@ -8,7 +8,8 @@
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
-            <Action ID="LookAt" tf_frame="{attention_home}"/>                                        
+            <Action ID="LookAt" tf_frame="{attention_home}"/> 
+
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
             <Fallback>
@@ -392,19 +393,27 @@
                         </Sequence>
                     </SequenceStar>
             </RetryUntilSuccessful>
+            <Action ID="Speak" say_text="ok, good!"/>
             <RetryUntilSuccessful num_attempts="5">
                 <Sequence>
                     <Action ID="CheckPolicy" question="<__media__>
                                                         Start the answer with: 'the guest is'.
-                                                        Provide a short natural-language description with 3–5 physical features of the person.
-                                                        Always include:
-                                                        - hair style or length,
-                                                        - whether they wear glasses or not,
-                                                        - clothing color,
-                                                        - and one more relevant detail (expression or accessory).
+                                                        Describe the person in one single short natural sentence using only plain text.
 
-                                                        Do NOT output JSON, bullet points, lists, or bounding boxes.
-                                                        Return ONE single sentence in natural language only."
+                                                        Always include:
+                                                        - hair style or hair length,
+                                                        - whether the person wears glasses or not,
+                                                        - clothing color,
+                                                        - and one more visible detail such as expression, accessory, or clothing type.
+
+                                                        Strict rules:
+                                                        - Output exactly one brief sentence.
+                                                        - Output plain text only.
+                                                        - Do not output JSON.
+                                                        - Do not output bullet points.
+                                                        - Do not output lists.
+
+                                                        Return only the final sentence."
                                         output_text="{description}"
                                         image_topic="/all_perceptions"/>
                     <Action ID="Speak" say_text="So, " param="{description}"/>

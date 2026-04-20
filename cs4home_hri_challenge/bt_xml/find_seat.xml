@@ -35,14 +35,14 @@
                     </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
-                <Action ID="PointAt" tf_frame="{chair_frame}" 
+                <!-- <Action ID="PointAt" tf_frame="{chair_frame}" 
                                         base_frame="base_link"
                                         low_z="0.6"
-                                        high_z="0.9"/>
+                                        high_z="0.9"/> -->
                 <Action ID="Speak" say_text="Please, sit over there"/> 
-                <Delay delay_msec="500">
+                <!-- <Delay delay_msec="500">
                     <Action ID="PlayMotionPredefined" motion_name="home"/>
-                </Delay>
+                </Delay> -->
                 <Action ID="LookAt" tf_frame="{attention_home}"/>
             </Sequence>
 
@@ -63,23 +63,36 @@
                     </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
-                <Action ID="CheckPolicy" question="<__media__>
-                                                   Identify an available seat or free
-                                                   space to sit in the room. Provide a highly descriptive, natural-language
-                                                   sentence to guide a person blindly to
-                                                   that location. You must mention the
-                                                   specific type of seat, its exact
-                                                   position on the floor, and its spatial
-                                                   relationship (e.g., 'to the left of',
-                                                   'to the right of', 'between') relative
-                                                   to at least two distinct nearby
-                                                   objects. Do NOT output JSON, bullet
-                                                   points, lists, or bounding boxes.
-                                                   Return ONE single sentence in natural
-                                                   language only."
-                                        output_text="{description}"
-                                        image_topic="/all_perceptions"/>          
-                <Action ID="Speak" say_text="So, you can sit at" param="{description}"/>
+                <Delay delay_msec="1000">
+                    <RetryUntilSuccessful num_attempts="4">
+                        <Action ID="CheckPolicy" question="<__media__>
+                                                        You are a robot helping a guest find a place to sit.
+
+                                                        Look at the image and choose ONE seat that is clearly free.
+
+                                                        Answer with a short natural phrase that completes:
+                                                        'So, you can sit at ...'
+
+                                                        Rules:
+                                                        - The place must be a real seat (chair, sofa, armchair, bench, stool).
+                                                        - Always describe the seat with its position relative to something visible.
+                                                        - Use simple spatial relations like:
+                                                        'next to', 'near', 'to the left of', 'to the right of'.
+                                                        - The answer must include BOTH:
+                                                        1) the seat
+                                                        2) its relative position
+
+                                                        Restrictions:
+                                                        - Do not say only 'the chair' or 'the sofa'.
+                                                        - Do not use 'table' as the seat (only as reference).
+                                                        - Do not invent objects.
+                                                        - Do not use coordinates or special tokens.
+                                                        - Output only the phrase, nothing else."
+                                                output_text="{description}"
+                                                image_topic="/all_perceptions"/>   
+                    </RetryUntilSuccessful>
+                </Delay>       
+                <Action ID="Speak" say_text="" param="{description}"/>
             </Sequence>
             
             <Action ID="Speak" say_text="Please sit where you find yourself more comfortable "/>
