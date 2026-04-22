@@ -24,101 +24,6 @@
                         <RetryUntilSuccessful num_attempts="-1">
                             <ReactiveFallback>                                
                                 <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           target_identity="host" 
-                                                           confidence="0.6" 
-                                                           interest="person" 
-                                                           max_depth="4.50" 
-                                                           max_entities="1" 
-                                                           order="depth_nearest"/>
-                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
-                            </ReactiveFallback>
-                        </RetryUntilSuccessful>
-                    </Timeout>
-                    <Sequence>
-                        <Action ID="EnableDetectByIdentity" enable="false"/>     
-                        <RetryUntilSuccessful num_attempts="-1">
-                            <ReactiveFallback>                                
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                           confidence="0.6" 
-                                                           interest="person" 
-                                                           max_depth="4.50" 
-                                                           max_entities="1" 
-                                                           order="depth_nearest"/>
-                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
-                            </ReactiveFallback>
-                        </RetryUntilSuccessful>
-                    </Sequence>
-                </Fallback>
-            </RetryUntilSuccessful>
-            <!-- do a look at host -->
-            <Action ID="LookAt" tf_frame="{best_detection}"/>
-            <RetryUntilSuccessful num_attempts="-1">
-                <Fallback>
-                    <Timeout msec="10000">
-                        <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                        confidence="0.6" 
-                                                        interest="person" 
-                                                        max_depth="4.50" 
-                                                        max_entities="1" 
-                                                        target_identity="{host}"
-                                                        order="depth_nearest"/>
-                        </RetryUntilSuccessful>
-                    </Timeout>
-                    <RetryUntilSuccessful num_attempts="-1">
-                            <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                        confidence="0.6" 
-                                                        interest="person" 
-                                                        max_depth="4.50" 
-                                                        max_entities="1" 
-                                                        order="depth_nearest"/>
-                    </RetryUntilSuccessful>
-                </Fallback>
-            </RetryUntilSuccessful>
-            <Action ID="GetAttendedGuest"
-                    guest_attended="{guest_attending}"/>
-            <Action ID="GetGuestInfo"
-                    guest_attending_id="{guest_attending}"
-                    guest_name="{guest_name2}"
-                    guest_drink="{guest_drink2}"
-                    guest_description="{guest_description2}"/>
-            <Action ID="Speak" say_text="Hi" param="{h_name}"/>
-            <Action ID="Speak" say_text=" this is" param="{guest_name2}"/>
-            <Action ID="Speak" say_text=" " param="{guest_description2}"/>
-            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}"/>
-            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                
-            <Action ID="EnableDetectByIdentity" enable="false"/>
-            <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <ReactiveFallback>
-                <Condition ID="IsDetected" confidence="0.5"
-                    interest="person"
-                    max_depth="1.0" 
-                    max_entities="2"
-                    order="depth_nearest"
-                    best_detection="{best_detection}"/>
-
-                <Action ID="MoveAlongAxis" 
-                        speed="0.3"
-                        distance="6.28"
-                        axis="z"/>
-            </ReactiveFallback>
-            <Action ID="Speak" say_text=" By the way" param="{guest_name2}"/>
-            <Action ID="Speak" say_text="our host" param="{h_name}"/>
-            <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>
-            <Fallback>
-                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
-                <Sequence>
-                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
-                    <Action ID="Speak" say_text="{explain_text}"/>
-                </Sequence>
-            </Fallback>
-            <Action ID="EnableDetectByIdentity" enable="true"/>
-            <RetryUntilSuccessful num_attempts="-1">
-                <Fallback>
-                    <Timeout msec="10000">
-                        <RetryUntilSuccessful num_attempts="-1">
-                            <ReactiveFallback>                                
-                                <Condition ID="IsDetected" best_detection="{best_detection}"
                                                            target_identity="guestone" 
                                                            confidence="0.6" 
                                                            interest="person" 
@@ -172,7 +77,7 @@
                         distance="6.28"
                         axis="z"/>
             </ReactiveFallback>
-            <!-- <Action ID="LookAt" tf_frame="{best_detection}"/> -->
+            <Action ID="LookAt" tf_frame="{best_detection}"/>
             <Action ID="Speak" say_text=" By the way" param="{guest_name2}"/>
             <Action ID="Speak" say_text="our guest" param="{guest_name1}"/>
             <Action ID="Speak" say_text="enjoys" param="{guest_drink1}"/>
