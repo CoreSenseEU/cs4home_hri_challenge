@@ -102,7 +102,7 @@
                                                        confidence="0.6"
                                                        interest="person"
                                                        frames=""
-                                                       max_depth="3"
+                                                       max_depth="2"
                                                        max_entities="1"
                                                        order="depth_nearest"
                                                        target_identity="guesttwo"/>
@@ -139,7 +139,7 @@
                                                         confidence="0.6"
                                                         interest="person"
                                                         frames=""
-                                                        max_depth="3"
+                                                        max_depth="2"
                                                         max_entities="1"
                                                         order="depth_nearest"
                                                         target_identity="{guestid}"/>
@@ -174,7 +174,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -194,7 +194,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -215,7 +215,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -237,7 +237,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -259,7 +259,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -282,7 +282,7 @@
                                                                     confidence="0.6"
                                                                     interest="person"
                                                                     frames=""
-                                                                    max_depth="3"
+                                                                    max_depth="2"
                                                                     max_entities="1"
                                                                     order="depth_nearest"
                                                                     target_identity="{guestid}"/>
@@ -307,7 +307,7 @@
                                                                 confidence="0.6"
                                                                 interest="person"
                                                                 frames=""
-                                                                max_depth="3"
+                                                                max_depth="2"
                                                                 max_entities="1"
                                                                 order="depth_nearest"
                                                                 target_identity="{guestid}"/>
@@ -328,7 +328,7 @@
                                                                 confidence="0.6"
                                                                 interest="person"
                                                                 frames=""
-                                                                max_depth="3"
+                                                                max_depth="2"
                                                                 max_entities="1"
                                                                 order="depth_nearest"
                                                                 target_identity="{guestid}"/>
@@ -350,7 +350,7 @@
                                                                 confidence="0.6"
                                                                 interest="person"
                                                                 frames=""
-                                                                max_depth="3"
+                                                                max_depth="2"
                                                                 max_entities="1"
                                                                 order="depth_nearest"
                                                                 target_identity="{guestid}"/>
@@ -375,7 +375,7 @@
                                                                 confidence="0.6"
                                                                 interest="person"
                                                                 frames=""
-                                                                max_depth="3"
+                                                                max_depth="2"
                                                                 max_entities="1"
                                                                 order="depth_nearest"
                                                                 target_identity="{guestid}"/>

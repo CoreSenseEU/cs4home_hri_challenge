@@ -25,7 +25,7 @@
                                     interest="person"
                                     cam_frame="{cam_frame}"
                                     frames="{frames}" 
-                                    max_depth="3" 
+                                    max_depth="4.50" 
                                     max_entities="1"
                                     order="depth_nearest"
                                     best_detection="{best_detection}"/>
@@ -49,7 +49,7 @@
             <Action ID="Speak" say_text=" this is" param="{guest_name}"/>
             <Action ID="Speak" say_text=" " param="{guest_description}"/>
             <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
-            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                
             <Action ID="LookAt" tf_frame="{attention_home}"/>
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <ReactiveFallback>

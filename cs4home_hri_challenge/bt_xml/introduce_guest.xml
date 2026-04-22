@@ -27,7 +27,7 @@
                                                            target_identity="host" 
                                                            confidence="0.6" 
                                                            interest="person" 
-                                                           max_depth="3" 
+                                                           max_depth="4.50" 
                                                            max_entities="1" 
                                                            order="depth_nearest"/>
                                 <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
@@ -41,7 +41,7 @@
                                 <Condition ID="IsDetected" best_detection="{best_detection}"
                                                            confidence="0.6" 
                                                            interest="person" 
-                                                           max_depth="3" 
+                                                           max_depth="4.50" 
                                                            max_entities="1" 
                                                            order="depth_nearest"/>
                                 <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
@@ -59,7 +59,7 @@
                             <Condition ID="IsDetected" best_detection="{best_detection}"
                                                         confidence="0.6" 
                                                         interest="person" 
-                                                        max_depth="3" 
+                                                        max_depth="4.50" 
                                                         max_entities="1" 
                                                         target_identity="{host}"
                                                         order="depth_nearest"/>
@@ -69,7 +69,7 @@
                             <Condition ID="IsDetected" best_detection="{best_detection}"
                                                         confidence="0.6" 
                                                         interest="person" 
-                                                        max_depth="3" 
+                                                        max_depth="4.50" 
                                                         max_entities="1" 
                                                         order="depth_nearest"/>
                     </RetryUntilSuccessful>
@@ -86,7 +86,7 @@
             <Action ID="Speak" say_text=" this is" param="{guest_name2}"/>
             <Action ID="Speak" say_text=" " param="{guest_description2}"/>
             <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}"/>
-            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                
             <Action ID="EnableDetectByIdentity" enable="false"/>
             <Action ID="LookAt" tf_frame="{attention_home}"/>
             <ReactiveFallback>
@@ -122,7 +122,7 @@
                                                            target_identity="guestone" 
                                                            confidence="0.6" 
                                                            interest="person" 
-                                                           max_depth="3" 
+                                                           max_depth="4.50" 
                                                            max_entities="1" 
                                                            order="depth_nearest"/>
                                 <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
@@ -136,7 +136,7 @@
                                 <Condition ID="IsDetected" best_detection="{best_detection}"
                                                            confidence="0.6" 
                                                            interest="person" 
-                                                           max_depth="3" 
+                                                           max_depth="4.50" 
                                                            max_entities="1" 
                                                            order="depth_nearest"/>
                                 <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
