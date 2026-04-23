@@ -33,7 +33,7 @@
                                                         order="depth_nearest"/>
                         </RetryUntilSuccessful>
                         <Action ID="LookAt" tf_frame="{best_detection}"/> 
-                        <Action ID="Speak" say_text="So the host" param="{h_name}"/>
+                        <Action ID="Speak" say_text="So the host"/>
                     </ReactiveSequence>
                     <ReactiveSequence>
                         <RetryUntilSuccessful num_attempts="-1">  
@@ -53,7 +53,7 @@
                 </Sequence>
             </RetryUntilSuccessful>
 
-            <Action ID="GetModelPath" model="bags.pt" model_path="{bags_model_path}"/>
+            <Action ID="GetModelPath" model="best26.pt" model_path="{bags_model_path}"/>
             <Action ID="SwitchYoloModel" model="{bags_model_path}"/>  <!--if uncomment then change cup to bag in the IsDetected node -->
             <Action ID="PlayMotionPredefined" motion_name="open"/>
 
@@ -64,12 +64,12 @@
                             <Sequence>
                                 <RetryUntilSuccessful num_attempts="-1">
                                     <Condition ID="IsDetected" confidence="0.4"
-                                                                interest="Bag"
+                                                                interest="bag"
                                                                 max_depth="3"
                                                                 max_entities="4"
                                                                 order="depth_nearest"/>
                                 </RetryUntilSuccessful>
-                                <Action ID="ExtractHandoverAlignment" interest_class="Bag" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
+                                <Action ID="ExtractHandoverAlignment" interest_class="bag" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}"/>
                             </Sequence>
                         </Timeout>
                         <Inverter>

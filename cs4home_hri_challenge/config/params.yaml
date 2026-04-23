@@ -72,6 +72,7 @@ find_seat_cognitive_module:
     - remove_guest_attended_bt_node
     - check_policy_bt_node
     - remove_guest_attended_bt_node
+    - set_torso_height_bt_node    
     - explain_bt_node
     bt_name: 'find_seat.xml'
     transition_output:
@@ -98,7 +99,9 @@ describe_person_cognitive_module:
     - store_identity_vector_bt_node
     - enable_detect_by_identity_bt_node
     - explain_bt_node
+    - set_torso_height_bt_node
     - set_head_joint_position_bt_node
+    - switch_yolo_model_bt_node
     bt_name: 'describe_person.xml'
     transition_output:
       topics: ['describe_person_cognitive_module/completion', 'bt_status']
@@ -191,6 +194,8 @@ introduce_guest_cognitive_module:
     - get_guest_info_bt_node
     - move_along_axis_bt_node
     - explain_bt_node
+    - set_torso_height_bt_node
+
 
     bt_name: 'introduce_guest.xml'
     transition_output:

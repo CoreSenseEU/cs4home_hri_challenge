@@ -8,78 +8,18 @@
                                           host_drink="{h_drink}"
                                           current_guest="{n}"
                                           attention_home="{attention_home}" />
-            <Action ID="Speak" say_text="Please follow me, i will get you to the  party"/>
-            <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <Fallback>
-                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
-                <Sequence>
-                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
-                    <Action ID="Speak" say_text="{explain_text}"/>
-                </Sequence>
-            </Fallback>
             <Action ID="EnableDetectByIdentity" enable="false"/>
-            
-            <RetryUntilSuccessful num_attempts="-1">
-                <ReactiveFallback>                                
-                    <Condition ID="IsDetected" confidence="0.6"
-                                    interest="person"
-                                    cam_frame="{cam_frame}"
-                                    frames="{frames}" 
-                                    max_depth="4.50" 
-                                    max_entities="1"
-                                    order="depth_nearest"
-                                    best_detection="{best_detection}"/>
-                    <Action ID="Pan" period="20.0" range="45" pitch_angle="10"/>
-                </ReactiveFallback>
-            </RetryUntilSuccessful>
-            <Action ID="LookAt" tf_frame="{best_detection}"/>
-            <Action ID="StoreIdentityVector" identity="host"/> <!-- if they give us a pic then delete this -->
-            
-            <!-- <SetBlackboard output_key="guestid" value="host"/> -->
-            
-            <Action ID="GetAttendedGuest"
-                    guest_attended="{guest_attending}"/>
-            <Action ID="GetGuestInfo"
-                    guest_attending_id="{guest_attending}"
-                    guest_name="{guest_name}"
-                    guest_drink="{guest_drink}"
-                    guest_description="{guest_description}"/>
-            <Action ID="LookAt" tf_frame="{best_detection}"/>
-            <Action ID="Speak" say_text="Hi" />
-            <Action ID="Speak" say_text=" this is" param="{guest_name}"/>
-            <Action ID="Speak" say_text=" " param="{guest_description}"/>
-            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink}"/>
-            <!-- <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="guest_confirmation"/>                                 -->
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party, please stay behind me"/>
             <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <!-- <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/> -->
-            <!-- <ReactiveFallback>
-                <Condition ID="IsDetected" best_detection="{best_detection}"
-                                                                confidence="0.6"
-                                                                interest="person"
-                                                                frames=""
-                                                                max_depth="1.0"
-                                                                max_entities="1"
-                                                                order="depth_nearest"
-                                                                />
-
-                <Action ID="MoveAlongAxis" 
-                        speed="0.3"
-                        distance="6.28"
-                        axis="z"/>
-            </ReactiveFallback> -->
-            <!-- <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.1"/> -->
-            <!-- <Action ID="LookAt" tf_frame="{best_detection}"/> -->
-            <!-- <Action ID="Speak" say_text=" By the way" param="{guest_name}"/>
-            <Action ID="Speak" say_text="our host" param="{h_name}"/>
-            <Action ID="Speak" say_text="enjoys" param="{h_drink}"/>
-            <Action ID="LookAt" tf_frame="{attention_home}"/>
-            <Fallback>
+            <!-- <Fallback>
                 <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party"/>
                 <Sequence>
                     <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
                     <Action ID="Speak" say_text="{explain_text}"/>
                 </Sequence>
             </Fallback> -->
+            <Action ID="LookAt" tf_frame="{attention_home}"/>
+            <Action ID="SetTorsoHeight" height="0.3"/>
         </Sequence> 
     </BehaviorTree>
 </root>

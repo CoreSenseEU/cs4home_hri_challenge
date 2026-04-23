@@ -15,7 +15,34 @@
         <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
 
         <Action ID="Speak" say_text="I'll find you a seat"/>
-
+         <Sequence>
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="30000">
+                            <ReactiveFallback>
+                                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}"/>
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5"/>
+                            </ReactiveFallback>
+                        </Timeout>
+                        <Sequence>
+                            <Action ID="Explain" question="IsSittable" auto_triggered="true" explanation="{explain_text}"/>
+                            <Action ID="Speak" say_text="{explain_text}"/>
+                            <AlwaysFailure/>
+                        </Sequence>
+                    </Fallback>
+                </RetryUntilSuccessful>
+                <Action ID="LookAt" tf_frame="{chair_frame}"/>
+                <Action ID="PointAt" tf_frame="{chair_frame}" 
+                                        base_frame="base_link"
+                                        low_z="0.6"
+                                        high_z="0.9"/>
+                <Action ID="Speak" say_text="Please, sit over there"/> 
+                <Delay delay_msec="500">
+                    <Action ID="PlayMotionPredefined" motion_name="home"/>
+                </Delay>
+                <Action ID="LookAt" tf_frame="{attention_home}"/>
+        </Sequence>
+<!-- 
         <Switch2 variable="{n}"  case_1="1" case_2="2" >
 
             <Sequence>
@@ -35,14 +62,14 @@
                     </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
-                <!-- <Action ID="PointAt" tf_frame="{chair_frame}" 
+                <Action ID="PointAt" tf_frame="{chair_frame}" 
                                         base_frame="base_link"
                                         low_z="0.6"
-                                        high_z="0.9"/> -->
+                                        high_z="0.9"/>
                 <Action ID="Speak" say_text="Please, sit over there"/> 
-                <!-- <Delay delay_msec="500">
+                <Delay delay_msec="500">
                     <Action ID="PlayMotionPredefined" motion_name="home"/>
-                </Delay> -->
+                </Delay>
                 <Action ID="LookAt" tf_frame="{attention_home}"/>
             </Sequence>
 
@@ -71,8 +98,8 @@
                                                         Look at the image and choose ONE seat that is clearly free.
 
                                                         Answer with a short natural phrase that completes:
-                                                        'So, you can sit at ...'
 
+                                                        'So, you can sit at ...'
                                                         Rules:
                                                         - The place must be a real seat (chair, sofa, armchair, bench, stool).
                                                         - Always describe the seat with its position relative to something visible.
@@ -97,7 +124,8 @@
             
             <Action ID="Speak" say_text="Please sit where you find yourself more comfortable "/>
             
-        </Switch2>
+        </Switch2> -->
+        <Action ID="SetTorsoHeight" height="0.3"/>
         </Sequence> 
 
     </BehaviorTree>
