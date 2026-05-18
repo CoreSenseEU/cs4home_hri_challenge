@@ -2,14 +2,13 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-class IntroduceGuestCM : public cs4home_core::CognitiveModule
+class RecoveryCM : public cs4home_core::CognitiveModule
 {
 public:
-  explicit IntroduceGuestCM(
+  explicit RecoveryCM(
     const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : cs4home_core::CognitiveModule("introduce_guest_cognitive_module", options)
+  : cs4home_core::CognitiveModule("recovery_cognitive_module", options)
   {
-
     this->declare_parameter<std::vector<std::string>>("plugin_list");
     this->declare_parameter<std::string>("bt_name");
     this->declare_parameter<std::vector<std::string>>("on_success_transition", {""});
@@ -20,14 +19,14 @@ public:
     this->declare_parameter<std::vector<double>>("waypoints.party", {});
     this->declare_parameter<std::vector<double>>("waypoints.guest_confirmation", {});
     this->declare_parameter<std::vector<double>>("waypoints.follow_ready", {});
-    RCLCPP_INFO(this->get_logger(), "IntroduceGuestCM initialized");
+    RCLCPP_INFO(this->get_logger(), "RecoveryCM initialized");
   }
 };
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<IntroduceGuestCM>();
+  auto node = std::make_shared<RecoveryCM>();
   rclcpp::spin(node->get_node_base_interface());
   rclcpp::shutdown();
   return 0;

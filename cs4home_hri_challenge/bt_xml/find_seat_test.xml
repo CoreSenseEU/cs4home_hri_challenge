@@ -21,7 +21,7 @@
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
                 <!-- this is not workinng, try again -->
-                 <Action ID="CheckPolicy" question="<__media__>
+                 <Action ID="CheckPolicy" question="&lt;__media__&gt;
                                                     Identify an available seat or free
                                                     space to sit in the room. Provide a highly descriptive, natural-language
                                                     sentence to guide a person blindly to

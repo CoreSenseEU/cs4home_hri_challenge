@@ -1,0 +1,11 @@
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Speak say_text="Activate empty Behavior Tree"/>
+            <Delay delay_msec="20000">
+                <AlwaysSuccess/>
+            </Delay>
+        </Sequence>
+    </BehaviorTree>
+</root>

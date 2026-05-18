@@ -14,6 +14,7 @@
 
 #include "cs4home_core/Core.hpp"
 #include "cs4home_core/macros.hpp"
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -64,8 +65,20 @@ public:
     RCLCPP_INFO(parent_->get_logger(), "Configuring CORE!");
 
     std::vector<std::string> plugin_list;
-    parent_->get_parameter("plugin_list", plugin_list);
-    parent_->get_parameter("bt_name", bt_name_);
+    if (!parent_->get_parameter("plugin_list", plugin_list)) {
+      RCLCPP_ERROR(parent_->get_logger(), "Missing required parameter: plugin_list");
+      return false;
+    }
+
+    if (!parent_->get_parameter("bt_name", bt_name_) || bt_name_.empty()) {
+      RCLCPP_ERROR(parent_->get_logger(), "Missing required parameter: bt_name");
+      return false;
+    }
+
+    RCLCPP_INFO(
+      parent_->get_logger(),
+      "BT configuration for node [%s]: bt_name=[%s], plugin_count=%zu",
+      parent_->get_name(), bt_name_.c_str(), plugin_list.size());
 
     for (const auto & plugin : plugin_list) {
       try {
@@ -80,7 +93,16 @@ public:
 
     std::string pkgpath = ament_index_cpp::get_package_share_directory("cs4home_hri_challenge");
     xml_file_ = pkgpath + "/bt_xml/" + bt_name_;
+    RCLCPP_INFO(parent_->get_logger(), "Package share directory: %s", pkgpath.c_str());
     RCLCPP_INFO(parent_->get_logger(), "Behavior Tree XML file path: %s", xml_file_.c_str());
+
+    if (!std::filesystem::exists(xml_file_)) {
+      RCLCPP_ERROR(
+        parent_->get_logger(),
+        "Behavior Tree XML file does not exist: %s",
+        xml_file_.c_str());
+      return false;
+    }
 
     // Create a new context for the cascade node to make it truly independent
     auto context = rclcpp::Context::make_shared();
@@ -217,9 +239,11 @@ private:
     tree_.haltTree();
     rclcpp::Rate rate(30);
     bool finish = false;
+    auto final_status = BT::NodeStatus::RUNNING;
 
     while (!stop_requested_.load() && !finish && rclcpp::ok()) {
       auto status = tree_.rootNode()->executeTick();
+      final_status = status;
       finish = status != BT::NodeStatus::RUNNING;
 
       auto kv_msg = std::make_shared<diagnostic_msgs::msg::KeyValue>();
@@ -236,7 +260,7 @@ private:
     }
 
     auto msg = std::make_shared<std_msgs::msg::Bool>();
-    msg->data = 1;
+    msg->data = final_status == BT::NodeStatus::SUCCESS;
     efferent_->publish(0, msg);
 
 

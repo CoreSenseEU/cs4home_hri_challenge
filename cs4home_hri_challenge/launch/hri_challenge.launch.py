@@ -31,7 +31,9 @@ def generate_launch_description():
         name='find_seat_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     greeting_guest_node = Node(
@@ -40,7 +42,9 @@ def generate_launch_description():
         name='greeting_guest_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     describe_person_node = Node(
@@ -49,7 +53,9 @@ def generate_launch_description():
         name='describe_person_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     grab_bag_node = Node(
@@ -58,7 +64,9 @@ def generate_launch_description():
         name='grab_bag_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     transport_bag_node = Node(
@@ -67,7 +75,9 @@ def generate_launch_description():
         name='transport_bag_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     hri_challenge_master = Node(
@@ -85,7 +95,20 @@ def generate_launch_description():
         name='introduce_guest_cognitive_module',
         namespace=namespace,
         output='screen',
-        parameters=[params_file]
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
+    )
+
+    recovery_node = Node(
+        package='cs4home_hri_challenge',
+        executable='recovery_cognitive_module',
+        name='recovery_cognitive_module',
+        namespace=namespace,
+        output='screen',
+        parameters=[params_file],
+        respawn=True,
+        respawn_delay=2.0
     )
 
     ld = LaunchDescription()
@@ -98,4 +121,5 @@ def generate_launch_description():
     ld.add_action(grab_bag_node)
     ld.add_action(transport_bag_node)
     ld.add_action(introduce_guest_node)
+    ld.add_action(recovery_node)
     return ld

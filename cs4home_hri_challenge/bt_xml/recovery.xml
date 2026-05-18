@@ -1,0 +1,8 @@
+<root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="Speak" say_text="I am unable to complete the current task. Do you want me to proceed to the next task? Please say yes or no."/>
+            <Action ID="DialogConfirmation"/>
+        </Sequence>
+    </BehaviorTree>
+</root>

@@ -7,7 +7,7 @@ class FindSeatCM : public cs4home_core::CognitiveModule
 public:
   explicit FindSeatCM(
     const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : cs4home_core::CognitiveModule("find_seat_cognitive_mmodule", options)
+  : cs4home_core::CognitiveModule("find_seat_cognitive_module", options)
   {
 
     this->declare_parameter<std::vector<std::string>>("plugin_list");

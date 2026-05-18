@@ -92,7 +92,7 @@
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
                 <Delay delay_msec="1000">
                     <RetryUntilSuccessful num_attempts="4">
-                        <Action ID="CheckPolicy" question="<__media__>
+                        <Action ID="CheckPolicy" question="&lt;__media__&gt;
                                                         You are a robot helping a guest find a place to sit.
 
                                                         Look at the image and choose ONE seat that is clearly free.

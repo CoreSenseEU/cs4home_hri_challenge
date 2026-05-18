@@ -16,15 +16,20 @@
 
 #include "cs4home_core/Master.hpp"
 #include "cs4home_core/Flow.hpp"
+#include "cs4home_hri_challenge/msg/module_transition_event.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include <algorithm>
+#include <chrono>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -47,6 +52,9 @@ public:
 
     RCLCPP_INFO(this->get_logger(), "HRIChallengeMaster initialized");
     declare_parameter<std::vector<std::string>>("on_startup", {});
+    declare_parameter<std::string>("recovery_module", "recovery_cognitive_module");
+    declare_parameter<int>("module_retries_before_recovery", 2);
+    declare_parameter<int>("lifecycle_monitor_period_ms", 2000);
   }
 
   using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -67,6 +75,10 @@ public:
       this->get_node_base_interface());
 
     parse_flow_configuration();
+
+    module_transition_publisher_ = this->create_publisher<
+      cs4home_hri_challenge::msg::ModuleTransitionEvent>(
+      "module_transition_events", 10);
 
     configure_nodes();
 
@@ -92,19 +104,22 @@ public:
 
       for (const auto & module_name : flow_config_.initial_states) {
         RCLCPP_INFO(this->get_logger(), "  → Starting initial module: %s", module_name.c_str());
-        activate_module(module_name);
+        start_module(module_name);
       }
     } else {
       RCLCPP_WARN(this->get_logger(), "No initial states defined in flow!");
     }
 
     RCLCPP_INFO(this->get_logger(), "=== HRI CHALLENGE MASTER ACTIVE ===");
+    start_lifecycle_monitor();
     return CallbackReturnT::SUCCESS;
   }
 
   CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state) override
   {
     RCLCPP_INFO(this->get_logger(), "=== MASTER DEACTIVATE ===");
+
+    stop_lifecycle_monitor();
 
     // Deactivate all modules
     for (const auto & module_name : flow_config_.all_modules) {
@@ -119,6 +134,8 @@ public:
     RCLCPP_INFO(this->get_logger(), "=== MASTER CLEANUP ===");
 
     // Stop the lifecycle executor
+    stop_lifecycle_monitor();
+
     if (lifecycle_executor_) {
       lifecycle_executor_->cancel();
     }
@@ -156,12 +173,28 @@ private:
   std::map<std::string,
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr> completion_subscribers_;
 
+  rclcpp::Publisher<cs4home_hri_challenge::msg::ModuleTransitionEvent>::SharedPtr
+    module_transition_publisher_;
+
   // Current active flow
   size_t current_flow_index_ = 0;
   std::string active_flow_;
 
   // Current module index in the sequence
   size_t current_module_index_ = 0;
+
+  // Lifecycle watchdog and recovery flow state
+  std::string active_module_;
+  std::string failed_module_;
+  std::string recovery_module_ = "recovery_cognitive_module";
+  bool recovery_active_ = false;
+  bool execution_finished_ = false;
+  int module_retries_before_recovery_ = 2;
+  int lifecycle_monitor_period_ms_ = 2000;
+  rclcpp::TimerBase::SharedPtr lifecycle_monitor_timer_;
+  std::map<std::string, int> recovery_attempts_;
+  std::map<std::string, bool> module_was_active_;
+  std::map<std::string, std::chrono::steady_clock::time_point> recovery_start_times_;
 
   void parse_flow_configuration()
   {
@@ -215,7 +248,25 @@ private:
         flow_config_.initial_states.size());
     }
 
+    this->get_parameter("recovery_module", recovery_module_);
+    this->get_parameter("module_retries_before_recovery", module_retries_before_recovery_);
+    this->get_parameter("lifecycle_monitor_period_ms", lifecycle_monitor_period_ms_);
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Recovery settings: module=%s, module_retries_before_recovery=%d, monitor_period_ms=%d",
+      recovery_module_.c_str(), module_retries_before_recovery_, lifecycle_monitor_period_ms_);
+
     flow_config_.all_modules.assign(all_unique_modules.begin(), all_unique_modules.end());
+    if (!recovery_module_.empty() &&
+      std::find(flow_config_.all_modules.begin(), flow_config_.all_modules.end(), recovery_module_) ==
+      flow_config_.all_modules.end())
+    {
+      flow_config_.all_modules.push_back(recovery_module_);
+      RCLCPP_INFO(
+        this->get_logger(),
+        "Added recovery module to lifecycle supervision: %s",
+        recovery_module_.c_str());
+    }
     RCLCPP_INFO(
       this->get_logger(), "Total unique modules: %zu",
       flow_config_.all_modules.size());
@@ -244,7 +295,139 @@ private:
     const auto & first_module = it->second.all_modules.front();
 
     RCLCPP_INFO(get_logger(), "Switching to flow: %s", flow_name.c_str());
-    activate_module(first_module);
+    start_module(first_module);
+  }
+
+  void start_module(const std::string & module_name)
+  {
+    if (execution_finished_) {
+      RCLCPP_WARN(get_logger(), "Ignoring activation for %s because execution is finished", module_name.c_str());
+      return;
+    }
+
+    active_module_ = module_name;
+    activate_module(module_name);
+  }
+
+  void start_lifecycle_monitor()
+  {
+    if (lifecycle_monitor_timer_) {
+      return;
+    }
+
+    auto period = std::chrono::milliseconds(std::max(100, lifecycle_monitor_period_ms_));
+    lifecycle_monitor_timer_ = this->create_wall_timer(
+      period,
+      std::bind(&HRIChallengeMaster::monitor_active_module, this));
+  }
+
+  void stop_lifecycle_monitor()
+  {
+    if (lifecycle_monitor_timer_) {
+      lifecycle_monitor_timer_->cancel();
+      lifecycle_monitor_timer_.reset();
+    }
+  }
+
+  void monitor_active_module()
+  {
+    if (execution_finished_ || active_module_.empty()) {
+      return;
+    }
+
+    const auto state = get_module_state(active_module_);
+    if (state == "active") {
+      module_was_active_[active_module_] = true;
+      log_recovery_duration_if_needed(active_module_);
+      return;
+    }
+
+    const bool count_new_failure = module_was_active_[active_module_];
+    module_was_active_[active_module_] = false;
+
+    RCLCPP_WARN(
+      get_logger(),
+      "Active module %s is not active. Current lifecycle state: %s",
+      active_module_.c_str(), state.c_str());
+    recover_active_module(state, count_new_failure);
+  }
+
+  void recover_active_module(const std::string & state, bool count_new_failure)
+  {
+    auto module_name = active_module_;
+    auto & attempts = recovery_attempts_[module_name];
+
+    if (count_new_failure) {
+      attempts++;
+      recovery_start_times_.try_emplace(module_name, std::chrono::steady_clock::now());
+    }
+
+    if (attempts > module_retries_before_recovery_) {
+      if (module_name == recovery_module_) {
+        RCLCPP_ERROR(
+          get_logger(),
+          "Recovery module failed after %d recovery attempt(s). Ending execution.",
+          module_retries_before_recovery_);
+        recovery_active_ = false;
+        execution_finished_ = true;
+        active_module_.clear();
+        stop_lifecycle_monitor();
+        return;
+      }
+      trigger_recovery_flow(module_name);
+      return;
+    }
+
+    RCLCPP_WARN(
+      get_logger(),
+      "Recovering module %s after lifecycle loss. Attempt %d/%d",
+      module_name.c_str(), attempts, module_retries_before_recovery_);
+
+    if (state == "inactive") {
+      activate_module(module_name);
+      return;
+    }
+
+    if (state == "configuring" || state == "activating" || state == "deactivating" ||
+      state == "cleaningup" || state == "shuttingdown")
+    {
+      return;
+    }
+
+    if (state == "unconfigured") {
+      configure_module(module_name);
+      return;
+    }
+
+    if (state == "finalized") {
+      cleanup_module(module_name);
+      return;
+    }
+
+    if (state == "unavailable" || state == "timeout") {
+      RCLCPP_WARN(
+        get_logger(),
+        "Waiting for %s lifecycle services to return after process respawn",
+        module_name.c_str());
+      return;
+    }
+
+    cleanup_module(module_name);
+  }
+
+  void trigger_recovery_flow(const std::string & failed_module)
+  {
+    failed_module_ = failed_module;
+    recovery_active_ = true;
+    active_module_ = recovery_module_;
+
+    RCLCPP_ERROR(
+      get_logger(),
+      "Module %s failed after %d recovery attempt(s). Starting recovery flow.",
+      failed_module.c_str(), module_retries_before_recovery_);
+
+    deactivate_module(failed_module);
+    start_module(recovery_module_);
   }
 
   void configure_nodes()
@@ -357,6 +540,155 @@ private:
     auto future = client->async_send_request(req);
   }
 
+  bool change_module_state_with_timing(
+    const std::string & module_name,
+    uint8_t transition_id,
+    const char * action_label,
+    const char * past_tense_label)
+  {
+    const auto transition_name = lifecycle_transition_name(transition_id);
+    auto it = lifecycle_clients_.find(module_name);
+    if (it == lifecycle_clients_.end()) {
+      RCLCPP_ERROR(this->get_logger(), "No lifecycle client for module: %s", module_name.c_str());
+      publish_module_transition_event(module_name, transition_name, false, 0.0);
+      return false;
+    }
+
+    auto client = it->second;
+
+    if (!client->wait_for_service(100ms)) {
+      RCLCPP_ERROR(
+        this->get_logger(), "Lifecycle service not available for: %s",
+        module_name.c_str());
+      publish_module_transition_event(module_name, transition_name, false, 0.0);
+      return false;
+    }
+
+    auto req = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
+    req->transition.id = transition_id;
+
+    RCLCPP_INFO(this->get_logger(), "%s module: %s", action_label, module_name.c_str());
+
+    const auto start = std::chrono::steady_clock::now();
+    auto future = client->async_send_request(req);
+    const auto result = lifecycle_executor_->spin_until_future_complete(future, 5s);
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start);
+
+    if (result != rclcpp::FutureReturnCode::SUCCESS) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "%s module %s timed out after %ld ms",
+        action_label, module_name.c_str(), elapsed.count());
+      publish_module_transition_event(
+        module_name, transition_name, false, static_cast<double>(elapsed.count()));
+      return false;
+    }
+
+    auto response = future.get();
+    if (!response->success) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "%s module %s failed after %ld ms",
+        action_label, module_name.c_str(), elapsed.count());
+      publish_module_transition_event(
+        module_name, transition_name, false, static_cast<double>(elapsed.count()));
+      return false;
+    }
+
+    RCLCPP_INFO(
+      this->get_logger(),
+      "%s module %s in %ld ms",
+      past_tense_label, module_name.c_str(), elapsed.count());
+    publish_module_transition_event(
+      module_name, transition_name, true, static_cast<double>(elapsed.count()));
+    return true;
+  }
+
+  std::string lifecycle_transition_name(uint8_t transition_id) const
+  {
+    if (transition_id == lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE) {
+      return "activate";
+    }
+
+    if (transition_id == lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE) {
+      return "deactivate";
+    }
+
+    if (transition_id == lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE) {
+      return "configure";
+    }
+
+    if (transition_id == lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP) {
+      return "cleanup";
+    }
+
+    return "unknown";
+  }
+
+  void publish_module_transition_event(
+    const std::string & module_name,
+    const std::string & lifecycle_transition,
+    bool success,
+    double elapsed_time_ms)
+  {
+    if (!module_transition_publisher_) {
+      return;
+    }
+
+    cs4home_hri_challenge::msg::ModuleTransitionEvent msg;
+    msg.stamp = this->now();
+    msg.flow_name = active_flow_;
+    msg.module_name = module_name;
+    msg.lifecycle_transition = lifecycle_transition;
+    msg.success = success;
+    msg.elapsed_time_ms = elapsed_time_ms;
+    msg.module_failed = false;
+    msg.recovery_performed = false;
+    msg.recovery_module = "";
+    module_transition_publisher_->publish(msg);
+  }
+
+  void publish_recovery_event(
+    const std::string & failed_module,
+    const std::string & recovery_module,
+    bool success,
+    double elapsed_time_ms)
+  {
+    if (!module_transition_publisher_) {
+      return;
+    }
+
+    cs4home_hri_challenge::msg::ModuleTransitionEvent msg;
+    msg.stamp = this->now();
+    msg.flow_name = active_flow_;
+    msg.module_name = failed_module;
+    msg.lifecycle_transition = "recovery";
+    msg.success = success;
+    msg.elapsed_time_ms = elapsed_time_ms;
+    msg.module_failed = true;
+    msg.recovery_performed = true;
+    msg.recovery_module = recovery_module;
+    module_transition_publisher_->publish(msg);
+  }
+
+  void log_recovery_duration_if_needed(const std::string & module_name)
+  {
+    auto it = recovery_start_times_.find(module_name);
+    if (it == recovery_start_times_.end()) {
+      return;
+    }
+
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - it->second);
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Recovered module %s back to active in %ld ms",
+      module_name.c_str(), elapsed.count());
+    publish_recovery_event(module_name, module_name, true, static_cast<double>(elapsed.count()));
+    recovery_start_times_.erase(it);
+  }
+
   // Helper method to activate any module (you'll call this from your custom logic)
   void activate_module(const std::string & module_name)
   {
@@ -395,12 +727,15 @@ private:
       return;
     }
 
-    auto req = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
-    req->transition.id = lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE;
-
-    RCLCPP_INFO(this->get_logger(), "Activating module: %s", module_name.c_str());
-
-    auto future = client->async_send_request(req);
+    if (change_module_state_with_timing(
+        module_name,
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        "Activating",
+        "Activated"))
+    {
+      module_was_active_[module_name] = true;
+      log_recovery_duration_if_needed(module_name);
+    }
   }
 
   // Helper method to deactivate any module
@@ -417,11 +752,14 @@ private:
       return;
     }
 
-    auto req = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
-    req->transition.id = lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE;
-
-    RCLCPP_DEBUG(this->get_logger(), "Deactivating: %s", module_name.c_str());
-    auto future = client->async_send_request(req);
+    if (change_module_state_with_timing(
+        module_name,
+        lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE,
+        "Deactivating",
+        "Deactivated"))
+    {
+      module_was_active_[module_name] = false;
+    }
   }
 
   // Helper method to cleanup any module
@@ -475,6 +813,19 @@ private:
       this->get_logger(), "Module '%s' completed with status: %s",
       module_name.c_str(), success ? "SUCCESS" : "FAILURE");
 
+    if (module_name == recovery_module_) {
+      handle_recovery_completion(success);
+      return;
+    }
+
+    if (!active_module_.empty() && module_name != active_module_) {
+      RCLCPP_WARN(
+        this->get_logger(),
+        "Ignoring stale completion from %s because active module is %s",
+        module_name.c_str(), active_module_.c_str());
+      return;
+    }
+
     // Just deactivate the module - keep it configured and ready for next activation
     deactivate_module(module_name);
 
@@ -483,6 +834,13 @@ private:
       activate_module(module_name);
       return;
     }
+
+    recovery_attempts_[module_name] = 0;
+    proceed_to_next_module_after(module_name);
+  }
+
+  void proceed_to_next_module_after(const std::string & module_name)
+  {
 
     auto fit = flow_configs_.find(active_flow_);
     if (fit == flow_configs_.end() || fit->second.all_modules.empty()) {
@@ -506,7 +864,7 @@ private:
         this->get_logger(),
         "SUCCESS → Next module in %s: %s",
         active_flow_.c_str(), next_it->c_str());
-      activate_module(*next_it);
+      start_module(*next_it);
       return;
     }
 
@@ -514,6 +872,9 @@ private:
 
     if (current_flow_index_ + 1 >= flow_names_.size()) {
       RCLCPP_INFO(this->get_logger(), "No more flows. Scenario finished.");
+      active_module_.clear();
+      execution_finished_ = true;
+      stop_lifecycle_monitor();
       return;
     }
 
@@ -522,6 +883,40 @@ private:
 
     RCLCPP_INFO(this->get_logger(), "Starting next flow: %s", active_flow_.c_str());
     switch_to_flow(active_flow_);
+  }
+
+  void handle_recovery_completion(bool continue_to_next_task)
+  {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Recovery completed with decision: %s",
+      continue_to_next_task ? "CONTINUE" : "STOP");
+
+    auto recovery_time_it = recovery_start_times_.find(failed_module_);
+    if (recovery_time_it != recovery_start_times_.end()) {
+      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - recovery_time_it->second);
+      publish_recovery_event(
+        failed_module_, recovery_module_, continue_to_next_task,
+        static_cast<double>(elapsed.count()));
+      recovery_start_times_.erase(recovery_time_it);
+    }
+
+    deactivate_module(recovery_module_);
+    recovery_active_ = false;
+    active_module_.clear();
+
+    if (continue_to_next_task) {
+      auto module_to_skip = failed_module_;
+      failed_module_.clear();
+      proceed_to_next_module_after(module_to_skip);
+      return;
+    }
+
+    failed_module_.clear();
+    execution_finished_ = true;
+    stop_lifecycle_monitor();
+    RCLCPP_WARN(this->get_logger(), "Execution ended by recovery decision");
   }
 
 };

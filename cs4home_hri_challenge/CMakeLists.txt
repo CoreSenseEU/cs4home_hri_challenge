@@ -7,7 +7,9 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(cs4home_core REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -25,9 +27,11 @@ find_package(nav2_behavior_tree REQUIRED)
 find_package(kb_msgs REQUIRED)
 find_package(configuration REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 set(dependencies
   cs4home_core
+  builtin_interfaces
   rclcpp
   rclcpp_lifecycle
   rclcpp_components
@@ -45,23 +49,31 @@ set(dependencies
   kb_msgs
   configuration
   diagnostic_msgs
+  std_msgs
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/ModuleTransitionEvent.msg"
+  DEPENDENCIES builtin_interfaces
 )
 
 
-add_library(execute_bt SHARED
+add_library(hri_execute_bt SHARED
   src/ExecuteBT.cpp
 )
-ament_target_dependencies(execute_bt ${dependencies})
+ament_target_dependencies(hri_execute_bt ${dependencies})
 
-add_library(transition_output SHARED
+add_library(hri_transition_output SHARED
 src/TransitionOutput.cpp
 )
-ament_target_dependencies(transition_output ${dependencies})
+ament_target_dependencies(hri_transition_output ${dependencies})
 
 add_executable(hri_challenge_master
   src/HRIChallengeMaster.cpp
 )
 ament_target_dependencies(hri_challenge_master ${dependencies})
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(hri_challenge_master "${cpp_typesupport_target}")
 
 add_executable(describe_person_cognitive_module
   src/DescribePersonCM.cpp
@@ -93,10 +105,15 @@ add_executable(transport_bag_cognitive_module
 )
 ament_target_dependencies(transport_bag_cognitive_module ${dependencies})
 
+add_executable(recovery_cognitive_module
+  src/RecoveryCM.cpp
+)
+ament_target_dependencies(recovery_cognitive_module ${dependencies})
+
 
 install(TARGETS
-  execute_bt
-  transition_output
+  hri_execute_bt
+  hri_transition_output
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -110,6 +127,7 @@ install(TARGETS
   grab_bag_cognitive_module
   transport_bag_cognitive_module
   introduce_guest_cognitive_module
+  recovery_cognitive_module
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -139,7 +157,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(execute_bt)
+ament_export_libraries(hri_execute_bt)
 ament_export_dependencies(${dependencies})
 
 ament_package()

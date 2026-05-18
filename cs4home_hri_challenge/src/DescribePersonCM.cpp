@@ -7,7 +7,7 @@ class DescribePersonCM : public cs4home_core::CognitiveModule
 public:
   explicit DescribePersonCM(
     const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : cs4home_core::CognitiveModule("describe_person_cognitive_mmodule", options)
+  : cs4home_core::CognitiveModule("describe_person_cognitive_module", options)
   {
 
     this->declare_parameter<std::vector<std::string>>("plugin_list");

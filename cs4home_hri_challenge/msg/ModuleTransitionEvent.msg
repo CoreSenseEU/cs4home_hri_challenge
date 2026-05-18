@@ -1,0 +1,9 @@
+builtin_interfaces/Time stamp
+string flow_name
+string module_name
+string lifecycle_transition
+bool success
+float64 elapsed_time_ms
+bool module_failed
+bool recovery_performed
+string recovery_module
