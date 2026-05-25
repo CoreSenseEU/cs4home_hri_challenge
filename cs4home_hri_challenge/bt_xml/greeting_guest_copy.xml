@@ -1,0 +1,54 @@
+<root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}"
+                                      manipulation_frame="{man_frame}"
+                                      host_name="{h_name}"
+                                      host_drink="{h_drink}"
+                                      current_guest="{n}"
+                                      attention_home="{attention_home}" />
+
+            <!-- Reset blackboard values -->
+            <SetBlackboard output_key="text_value" value=""/>
+            <SetBlackboard output_key="text_value2" value=""/>
+            <SetBlackboard output_key="text_value3" value=""/>
+            <SetBlackboard output_key="name_value" value=""/>
+            <SetBlackboard output_key="drink_value" value=""/>
+            <SetBlackboard output_key="description" value=""/>
+
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}"/>
+            <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
+
+            <!-- Ask name until confirmed -->
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Action ID="Speak" say_text="What's your name?"/>
+                    <Action ID="Listen" listen_text="{text_value}"/>
+                    <Action ID="Query" text="{text_value}" intention="name" intention_value="{name_value}"/>
+                    <Action ID="Speak" say_text="So you are" param="{name_value}"/>
+                    <Action ID="Speak" say_text="Please say yes or no"/>
+                    <Action ID="DialogConfirmation"/>
+                </Sequence>
+            </RetryUntilSuccessful>
+
+            <!-- Ask favorite drink until confirmed -->
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Action ID="Speak" say_text="What's your favorite drink?"/>
+                    <Action ID="Listen" listen_text="{text_value2}"/>
+                    <Action ID="Query" text="{text_value2}" intention="drink" intention_value="{drink_value}"/>
+                    <Action ID="Speak" say_text="So it seems you like" param="{drink_value}"/>
+                    <Action ID="Speak" say_text="Please say yes or no"/>
+                    <Action ID="DialogConfirmation"/>
+                </Sequence>
+            </RetryUntilSuccessful>
+
+            <!-- Ask description until confirmed -->
+            <Action ID="Speak" say_text="Ok, good!"/>
+
+            <Action ID="StoreGuestInfo" guest_name="{name_value}"
+                                            guest_description="i'm mortal"
+                                            guest_drink="{drink_value}"/>
+        </Sequence>
+    </BehaviorTree>
+</root>

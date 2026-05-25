@@ -11,10 +11,11 @@
                                     attention_home="{attention_home}" /> 
                                 
         <Action ID="Speak" say_text="come here"/>
-        <Action ID="GetAttendedGuest" guest_attended="{guest_attending}"/>
-        <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}"/>
-
+       
         <Action ID="Speak" say_text="I'll find you a seat"/>
+        <ForceSuccess>
+            <Action ID="PlayMotionPredefined" motion_name="close"/>
+        </ForceSuccess>
          <Sequence>
                 <RetryUntilSuccessful num_attempts="-1">
                     <Fallback>
@@ -32,16 +33,27 @@
                     </Fallback>
                 </RetryUntilSuccessful>
                 <Action ID="LookAt" tf_frame="{chair_frame}"/>
-                <Action ID="PointAt" tf_frame="{chair_frame}" 
-                                        base_frame="base_link"
-                                        low_z="0.6"
-                                        high_z="0.9"/>
-                <Action ID="Speak" say_text="Please, sit over there"/> 
+                <Fallback>
+                    <Sequence>
+                        <Action ID="PointAt" tf_frame="{chair_frame}" 
+                                                base_frame="base_link"
+                                                low_z="0.6"
+                                                high_z="0.9"/>
+                        <Action ID="Speak" say_text="Please, sit over there"/>
+                    </Sequence>
+                    <Action ID="Speak" say_text="Please sit where im looking at "/>
+                </Fallback>
+                <Delay delay_msec="500">
+                    <ForceSuccess>
+                        <Action ID="PlayMotionPredefined" motion_name="close"/>
+                    </ForceSuccess>
+                </Delay>
                 <Delay delay_msec="500">
                     <Action ID="PlayMotionPredefined" motion_name="home"/>
                 </Delay>
                 <Action ID="LookAt" tf_frame="{attention_home}"/>
         </Sequence>
+        
 <!-- 
         <Switch2 variable="{n}"  case_1="1" case_2="2" >
 

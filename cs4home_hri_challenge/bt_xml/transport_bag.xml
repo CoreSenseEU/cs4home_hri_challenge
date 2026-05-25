@@ -13,9 +13,10 @@
 
             <Action ID="LookAt" tf_frame="{attention_home}"/>
             <Action ID="EnableDetectByIdentity" enable="false"/>
-            <Action ID="Speak" param="{h_name}" say_text="Heey "/>
+            <Action ID="Speak" say_text="Heey Host "/>
             <Action ID="Speak" param="" say_text="I have something for you, can you come here please?"/>
             <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="{follow_ready}"/>
+            <Action ID="Speak" param="" say_text="I am waiting for you can you move in front of me?"/>
             <RetryUntilSuccessful num_attempts="-1">
                 <Condition ID="IsDetected" 
                     confidence="0.6" 
@@ -25,9 +26,20 @@
                     order="depth"
                     best_detection="{best_detection_global}"/>
             </RetryUntilSuccessful>
-            <Action ID="Speak" param="{h_name}" say_text="Hi "/>
+            <Action ID="Speak" param="" say_text="Hi "/>
             <Action ID="Speak" param="" say_text="Where do you want to drop the bag?"/>
             <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end "/>
+            <Delay delay_msec="5000">
+                <ForceSuccess>
+                  <Condition ID="IsDetected" 
+                    confidence="0.6" 
+                    interest="person"
+                    max_depth="3.0" 
+                    max_entities="2"
+                    order="depth"
+                    best_detection="{best_detection_global}"/>                    
+                </ForceSuccess>
+            </Delay>
             <Action ID="RemoveStringPrefix" string_to_remove="{best_detection_global}" prefix="person_" result="{id}"/>
             <Action ID="SetPersistentId" id="{id}"/>
             <RetryUntilSuccessful num_attempts="-1">
@@ -42,8 +54,6 @@
                                                         max_entities="2"
                                                         order="depth"/>
                             </RetryUntilSuccessful>
-                            <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
-                            <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{filtered_frame}"/> -->
                             <Action ID="LookAt" tf_frame="{best_detection_global}"/>
 
                             <Condition ID="IsEntityMoving" distance_tolerance="0.6"
@@ -69,8 +79,6 @@
                                                         max_entities="1" 
                                                         order="depth_nearest"/>
                         </RetryUntilSuccessful>
-                        <!-- <Action ID="FilterEntity" frame="{best_detection}" lambda="0.1"/> -->
-                        <!-- <Action ID="AddStringSuffix" string_to_modify="{best_detection}" suffix="_filtered" result="{best_detection}"/> -->
                         <Action ID="LookAt" tf_frame="{best_detection_global}"/>
                         <ForceSuccess>
                             <Action ID="GoalPublisher" 
@@ -82,18 +90,20 @@
                     </ReactiveSequence>
                 </Sequence>
             </RetryUntilSuccessful>
-            <Action ID="Speak" param="" say_text="I will leave the bag here."/>
+            <Action ID="Speak" param="" say_text="I will DROP the bag here"/>
             <Delay delay_msec="500">
                 <Action ID="PlayMotionPredefined" motion_name="offer"/>
             </Delay>
-            <Action ID="Speak" param="" say_text="Please take the bag"/>
             <Delay delay_msec="1000">
                 <Action ID="PlayMotionPredefined" motion_name="open"/>
             </Delay>
-            <Action ID="Speak" param="" say_text="Thank you"/>
             <Delay delay_msec="500">
+                <Action ID="MoveJoint" joint_name="arm_4_joint" joint_value="1.176718081992674" group_name=""/>
+            </Delay>
+            <Delay delay_msec="1000">
                 <Action ID="PlayMotionPredefined" motion_name="home"/>
             </Delay>    
+            <Action ID="Speak" param="" say_text="goodbye, kisses"/>
         </Sequence> 
     </BehaviorTree>
 </root>

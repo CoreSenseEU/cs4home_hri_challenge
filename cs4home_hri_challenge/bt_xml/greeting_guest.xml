@@ -12,13 +12,13 @@
 
             <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
-            <!-- <Fallback>
+            <Fallback>
                 <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>
                 <Sequence>
                     <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}"/>
                     <Action ID="Speak" say_text="{explain_text}"/>
                 </Sequence>
-            </Fallback> -->
+            </Fallback>
             <Action ID="EnableDetectByIdentity" enable="false"/>
 
             <RetryUntilSuccessful num_attempts="-1">
@@ -270,12 +270,11 @@
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
-                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/> -->
-                                <Action ID="Speak" say_text="So you are" param="{name_value}"/>
-                                <Action ID="Speak" say_text="Please say yes or no"/>
+                                <Action ID="Speak" say_text="Nice to meet you" param="{name_value}"/>
+                                <!-- <Action ID="Speak" say_text="Please say yes or no"/> -->
                             </ReactiveSequence> 
 
-                            <ReactiveSequence>
+                            <!-- <ReactiveSequence>
                                 <RetryUntilSuccessful num_attempts="-1">  
                                     <Fallback>
                                         <Condition ID="IsDetected" best_detection="{best_detection}"
@@ -292,11 +291,9 @@
                                     </Fallback>
                                 </RetryUntilSuccessful>
                                 <Action ID="LookAt" tf_frame="{best_detection}"/> 
-
-                                <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                                 <Action ID="DialogConfirmation" />
-                            </ReactiveSequence>
-                        </Sequence>
+                            </ReactiveSequence> -->
+                        </Sequence> 
                         
                         <Sequence>
                             <Action ID="Speak" say_text="What's your favorite drink?"/>
@@ -318,7 +315,6 @@
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
-                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                         </ReactiveSequence>
 
                         <ReactiveSequence>
@@ -339,7 +335,6 @@
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
-                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="Listen" listen_text="{text_value2}"/>
                         </ReactiveSequence>
 
@@ -360,15 +355,13 @@
                                 </Fallback>
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
-
-                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="Query" text="{text_value2}" intention="drink" intention_value="{drink_value}"/>
                         </ReactiveSequence>
 
                         <Action ID="Speak" say_text="So it seems you like " param="{drink_value}"/>
-                        <Action ID="Speak" say_text="Please say yes or no"/>
+                        <!-- <Action ID="Speak" say_text="Please say yes or no"/> -->
 
-                        <ReactiveSequence>
+                        <!-- <ReactiveSequence>
                             <RetryUntilSuccessful num_attempts="-1">  
                                 <Fallback>
                                     <Condition ID="IsDetected" best_detection="{best_detection}"
@@ -386,9 +379,8 @@
                             </RetryUntilSuccessful>
                             <Action ID="LookAt" tf_frame="{best_detection}"/> 
 
-                            <!-- <Action ID="FilterEntity" frame="person_0" lambda="0.05"/>  -->
                             <Action ID="DialogConfirmation" />
-                        </ReactiveSequence>
+                        </ReactiveSequence> -->
                         
                         </Sequence>
                     </SequenceStar>
@@ -398,20 +390,16 @@
                 <Action ID="CheckPolicy" question="<__media__>
                                                     Start the answer with: 'the guest is'.
                                                     Describe the person in one single short natural sentence using only plain text.
-
                                                     Always include:
-                                                    - hair style or hair length,
-                                                    - whether the person wears glasses or not,
-                                                    - clothing color,
-                                                    - and one more visible detail such as accessory, or clothing type.
-
+                                                    - hair length and style (e.g. short, long, curly, straight, tied back) — do NOT mention color,
+                                                    - whether the person wears glasses or not, and if yes, the frame shape (e.g. round, rectangular),
+                                                    - clothing type and fit (e.g. fitted jacket, loose shirt, collared top) — do NOT mention color,
+                                                    - one visible accessory or distinctive detail (e.g. beard, hat, lanyard, headset).
                                                     Strict rules:
+                                                    - Do NOT mention any colors anywhere in the output.
+                                                    - Only describe what is clearly visible. If unsure, omit it.
                                                     - Output exactly one brief sentence.
-                                                    - Output plain text only.
-                                                    - Do not output JSON.
-                                                    - Do not output bullet points.
-                                                    - Do not output lists.
-
+                                                    - Output plain text only. No JSON, no lists, no bullet points, no -.
                                                     Return only the final sentence."
                                     output_text="{description}"
                                     image_topic="/all_perceptions"/>

@@ -96,7 +96,9 @@
                     <Action ID="PlayMotionPredefined" motion_name="close"/>
                 </Delay>
             </ForceSuccess>
-            <Action ID="Speak" say_text="Thanks! securing the bag!"/>
+            <Action ID="Speak" say_text="Thanks! i will secure the bag, for this i will move back a bit please be careful"/>
+            <Action ID="MoveAlongAxis" distance="0.6" speed="-0.15" axis="x"/>
+
             <Delay delay_msec="2000">
                 <Action ID="PlayMotionPredefined" motion_name="home"/>
             </Delay>

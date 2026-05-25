@@ -160,6 +160,7 @@ transport_bag_cognitive_module:
     - enable_detect_by_identity_bt_node
     - explain_bt_node
     - play_motion_predefined_bt_node
+    - move_joint_bt_node
 
     bt_name: 'transport_bag.xml'
     transition_output:
