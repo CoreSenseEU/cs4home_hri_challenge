@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.8)
 project(cs4home_hri_challenge)
 
+if(POLICY CMP0071)
+  cmake_policy(SET CMP0071 NEW)
+endif()
+
+set(CMAKE_AUTOMOC ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -8,6 +14,8 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(cs4home_core REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -28,6 +36,7 @@ find_package(kb_msgs REQUIRED)
 find_package(configuration REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rviz_common REQUIRED)
 
 set(dependencies
   cs4home_core
@@ -56,6 +65,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ModuleTransitionEvent.msg"
   DEPENDENCIES builtin_interfaces
 )
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
 add_library(hri_execute_bt SHARED
@@ -68,11 +78,29 @@ src/TransitionOutput.cpp
 )
 ament_target_dependencies(hri_transition_output ${dependencies})
 
+add_library(hri_challenge_monitor_panel SHARED
+  include/cs4home_hri_challenge/HRIChallengeMonitorPanel.hpp
+  src/HRIChallengeMonitorPanel.cpp
+)
+target_include_directories(hri_challenge_monitor_panel PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(hri_challenge_monitor_panel
+  pluginlib
+  rclcpp
+  rviz_common
+)
+target_link_libraries(hri_challenge_monitor_panel
+  Qt5::Widgets
+  "${cpp_typesupport_target}"
+)
+pluginlib_export_plugin_description_file(rviz_common rviz_plugin_description.xml)
+
 add_executable(hri_challenge_master
   src/HRIChallengeMaster.cpp
 )
 ament_target_dependencies(hri_challenge_master ${dependencies})
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(hri_challenge_master "${cpp_typesupport_target}")
 
 add_executable(describe_person_cognitive_module
@@ -114,9 +142,14 @@ ament_target_dependencies(recovery_cognitive_module ${dependencies})
 install(TARGETS
   hri_execute_bt
   hri_transition_output
+  hri_challenge_monitor_panel
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/
+  DESTINATION include
 )
 
 install(TARGETS
@@ -135,6 +168,10 @@ install(DIRECTORY
   launch
   bt_xml
   config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(FILES rviz_plugin_description.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -157,7 +194,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(hri_execute_bt)
+ament_export_libraries(hri_execute_bt hri_challenge_monitor_panel)
 ament_export_dependencies(${dependencies})
 
 ament_package()

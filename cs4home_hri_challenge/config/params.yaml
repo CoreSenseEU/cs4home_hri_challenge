@@ -2,10 +2,10 @@
   ros__parameters:
     waypoints_names: ["entrance", "party", "guest_confirmation", "follow_ready"]
     waypoints: # [x, y, yaw] only 3 numbers!!
-      entrance: [2.598, -4.170, -3.065]
-      party: [7.964, -4.573, -1.081]
-      guest_confirmation: [8.930, -4.273, 2.78]
-      follow_ready: [8.64, -4.121, 1.577]
+      entrance: [1.12, 6.61, 0.7]
+      party: [1.19, 4.91, 0.95]
+      guest_confirmation: [1.19, 4.91, 0.95]
+      follow_ready: [1.19, 4.91, 0.95]
 
 hri_challenge_master:
   ros__parameters:
@@ -47,7 +47,7 @@ greeting_guest_cognitive_module:
     - remove_guest_attended_bt_node
     - remove_guest_facts_bt_node
     - explain_bt_node
-    bt_name: 'empty.xml'
+    bt_name: 'greeting_guest.xml'
     # New completion topic for flow management
     transition_output:
       topics: ['greeting_guest_cognitive_module/completion', 'bt_status']
@@ -76,7 +76,7 @@ find_seat_cognitive_module:
     - remove_guest_attended_bt_node
     - set_torso_height_bt_node    
     - explain_bt_node
-    bt_name: 'empty.xml'
+    bt_name: 'find_seat.xml'
     transition_output:
       topics: ['find_seat_cognitive_module/completion', 'bt_status']
       types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
@@ -104,7 +104,7 @@ describe_person_cognitive_module:
     - set_torso_height_bt_node
     - set_head_joint_position_bt_node
     - switch_yolo_model_bt_node
-    bt_name: 'empty.xml'
+    bt_name: 'describe_person.xml'
     transition_output:
       topics: ['describe_person_cognitive_module/completion', 'bt_status']
       types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
@@ -132,7 +132,7 @@ grab_bag_cognitive_module:
     - enable_detect_by_identity_bt_node
     - activation_control_bt_node
     - explain_bt_node
-    bt_name: 'empty.xml'
+    bt_name: 'grab_bag.xml'
     transition_output:
       topics: ['grab_bag_cognitive_module/completion', 'bt_status']
       types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
@@ -163,7 +163,7 @@ transport_bag_cognitive_module:
     - explain_bt_node
     - play_motion_predefined_bt_node
 
-    bt_name: 'empty.xml'
+    bt_name: 'transport_bag.xml'
     transition_output:
       topics: ['transport_bag_cognitive_module/completion', 'bt_status']
       types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']
@@ -199,7 +199,7 @@ introduce_guest_cognitive_module:
     - set_torso_height_bt_node
 
 
-    bt_name: 'empty.xml'
+    bt_name: 'introduce_guest.xml'
     transition_output:
       topics: ['introduce_guest_cognitive_module/completion', 'bt_status']
       types: ['std_msgs/msg/Bool', 'diagnostic_msgs/msg/KeyValue']

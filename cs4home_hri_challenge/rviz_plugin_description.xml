@@ -1,0 +1,10 @@
+<library path="hri_challenge_monitor_panel">
+  <class
+    name="cs4home_hri_challenge/HRIChallengeMonitorPanel"
+    type="cs4home_hri_challenge::HRIChallengeMonitorPanel"
+    base_class_type="rviz_common::Panel">
+    <description>
+      Runtime monitor for HRI challenge flow execution and cognitive module lifecycle transitions.
+    </description>
+  </class>
+</library>

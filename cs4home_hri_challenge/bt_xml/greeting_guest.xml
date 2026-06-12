@@ -10,7 +10,10 @@
                                           attention_home="{attention_home}" />
             <Action ID="LookAt" tf_frame="{attention_home}"/> 
 
-            <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
+            <Fallback>
+                <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873"/>
+                <AlwaysSuccess/>
+            </Fallback>
             <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door"/> 
             <!-- <Fallback>
                 <Action ID="MoveTo" is_truncated="false" distance_tolerance="-1.0" tf_frame="entrance" will_finish="true"/>

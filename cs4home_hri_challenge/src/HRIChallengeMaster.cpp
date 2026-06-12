@@ -689,6 +689,28 @@ private:
     recovery_start_times_.erase(it);
   }
 
+  void log_recovery_module_activation_duration_if_needed()
+  {
+    if (failed_module_.empty()) {
+      return;
+    }
+
+    auto it = recovery_start_times_.find(failed_module_);
+    if (it == recovery_start_times_.end()) {
+      return;
+    }
+
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - it->second);
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Recovery module %s activated after %s was lost in %ld ms",
+      recovery_module_.c_str(), failed_module_.c_str(), elapsed.count());
+    publish_recovery_event(
+      failed_module_, recovery_module_, true, static_cast<double>(elapsed.count()));
+    recovery_start_times_.erase(it);
+  }
+
   // Helper method to activate any module (you'll call this from your custom logic)
   void activate_module(const std::string & module_name)
   {
@@ -717,6 +739,11 @@ private:
       RCLCPP_INFO(
         this->get_logger(), "Module %s is already active, skipping activation",
         module_name.c_str());
+      if (module_name == recovery_module_) {
+        log_recovery_module_activation_duration_if_needed();
+      } else {
+        log_recovery_duration_if_needed(module_name);
+      }
       return;
     }
 
@@ -734,7 +761,11 @@ private:
         "Activated"))
     {
       module_was_active_[module_name] = true;
-      log_recovery_duration_if_needed(module_name);
+      if (module_name == recovery_module_) {
+        log_recovery_module_activation_duration_if_needed();
+      } else {
+        log_recovery_duration_if_needed(module_name);
+      }
     }
   }
 
@@ -891,16 +922,6 @@ private:
       this->get_logger(),
       "Recovery completed with decision: %s",
       continue_to_next_task ? "CONTINUE" : "STOP");
-
-    auto recovery_time_it = recovery_start_times_.find(failed_module_);
-    if (recovery_time_it != recovery_start_times_.end()) {
-      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - recovery_time_it->second);
-      publish_recovery_event(
-        failed_module_, recovery_module_, continue_to_next_task,
-        static_cast<double>(elapsed.count()));
-      recovery_start_times_.erase(recovery_time_it);
-    }
 
     deactivate_module(recovery_module_);
     recovery_active_ = false;
