@@ -103,6 +103,11 @@ add_executable(hri_challenge_master
 ament_target_dependencies(hri_challenge_master ${dependencies})
 target_link_libraries(hri_challenge_master "${cpp_typesupport_target}")
 
+add_executable(hri_challenge_bt
+  src/HRIChallengeBTMain.cpp
+)
+ament_target_dependencies(hri_challenge_bt ${dependencies})
+
 add_executable(describe_person_cognitive_module
   src/DescribePersonCM.cpp
 )
@@ -153,6 +158,7 @@ install(DIRECTORY include/
 )
 
 install(TARGETS
+  hri_challenge_bt
   hri_challenge_master
   find_seat_cognitive_module
   greeting_guest_cognitive_module
