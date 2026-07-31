@@ -87,6 +87,12 @@ repositories:
     type: git
     url: https://github.com/severin-lemaignan/openrobots-ontology.git
     version: humble-devel
+  thirdparty/cs4home-explainability:
+    type: git
+    url: https://github.com/CoreSenseEU/cs4home-explainability.git
+  thirdparty/cs4home_architecture:
+    type: git
+    url: https://github.com/CoreSenseEU/cs4home_architecture.git
 
     
 
