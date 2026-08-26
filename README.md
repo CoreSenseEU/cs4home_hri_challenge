@@ -1,68 +1,56 @@
 # cs4home_hri_challenge
 
-HRI Challenge cognitive module for the CoreSense4Home (RoboCup @Home) stack. It orchestrates the greeting of a person at the entrance of the house, inviting them inside and offering them a seat. It also provides voice feedback via TTS. The launch file starts:
-- greeting_guest_cognitive_module (this package)
-- audio player (audio_common)
-- text-to-speech node (tts_ros)
+This repository implements the CoreSense4Home HRI Challenge. It coordinates cognitive modules for receiving a guest, describing and introducing the person, finding a seat, and assisting with a bag.
 
-## 1. Prerequisites
-- Ubuntu 22.04 + ROS 2 Humble installed and sourced
-- colcon + rosdep + vcs tools installed
-- Working CUDA GPU (optional, for faster TTS / future perception)
+## CoreSense role
 
-## 2. Create or reuse a workspace
-If you do not already have a RoboCup/CoreSense workspace, create one:
-```bash
-mkdir -p robocup24_ws/src
-cd robocup24_ws/src
-```
+The terms below follow the [CoreSense Ontology (CSO)](https://w3id.org/coresense/cso).
 
-## 3. Clone core stack 
-Clone the  repository 
-```bash
+- The HRI Challenge is a [Functionality](https://w3id.org/coresense/cso#Functionality) exercised in a domestic social context.
+- Dialogue, person perception, guest description, seating and bag assistance are [Cognitive Capabilities](https://w3id.org/coresense/cso#CognitiveCapability).
+- The robot is the [Agent](https://w3id.org/coresense/cso#Agent) coordinating the interaction.
+- Each challenge flow is a [Task](https://w3id.org/coresense/cso#Task) made of planned [Actions](https://w3id.org/coresense/cso#Action).
+- The [Goal](https://w3id.org/coresense/cso#Goal) is a desired social state in which the guest has been received and assisted.
+
+## Task flow
+
+~~~mermaid
+flowchart TD
+    start["Guest arrives"] --> greet["Greet guest"]
+    greet --> master{"HRI challenge flow"}
+    master --> describe["Describe person"]
+    describe --> seat1["Find seat"]
+    master --> bag["Receive bag"]
+    bag --> introduce["Introduce guest"]
+    introduce --> seat2["Find seat"]
+    seat2 --> transport["Transport bag"]
+    seat1 --> goal["Guest assisted"]
+    transport --> goal
+~~~
+
+The `hri_challenge_master` selects and coordinates the configured flow while each stage executes its behaviour tree.
+
+## Requirements
+
+Use Ubuntu 22.04 and ROS 2 Humble. The full task uses the CoreSense4Home perception, dialogue, navigation and manipulation systems.
+
+## Build
+
+~~~bash
+mkdir -p ~/robocup24_ws/src
+cd ~/robocup24_ws/src
 git clone https://github.com/CoreSenseEU/cs4home_hri_challenge.git
-```
-
-## 4. Import third‑party repositories
-This package ships a `thirdparty.repos` manifest you can feed into `vcs` to pull additional sources:
-```bash
 vcs import --recursive < cs4home_hri_challenge/thirdparty.repos
-```
-
-## 5. Install system & ROS package dependencies
-From the workspace root:
-```bash
-cd ..   # ensure you are at robocup24_ws level (one above src)
-rosdep update
+cd ..
 rosdep install --from-paths src --ignore-src -r -y
-```
-Run rosdep again later if you add more packages.
-## 6. Install [Perception System](https://github.com/jmguerreroh/perception_system)
-
-
-## 7. Install [Whisper](https://github.com/mgonzs13/whisper_ros)
-
-
-## 8. Build
-```bash
 colcon build --symlink-install
-```
-
-## 9. Source the overlay
-```bash
 source install/setup.bash
-```
-Add the above line to your shell rc file for convenience.
+~~~
 
-## 10. Launch HRI Challenge
+## Run
 
-Launch dependencies
-```bash
-ros2 launch robocup_bringup hri_challenge_dependencies.launch.py
-```
-Launch HRI Challenge
-```bash
+Start the CoreSense4Home perception, dialogue, navigation and manipulation dependencies required by the selected scenario. Then launch the challenge modules:
+
+~~~bash
 ros2 launch cs4home_hri_challenge hri_challenge.launch.py
-```
-
-
+~~~
