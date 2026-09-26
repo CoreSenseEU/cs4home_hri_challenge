@@ -54,3 +54,9 @@ Start the CoreSense4Home perception, dialogue, navigation and manipulation depen
 ~~~bash
 ros2 launch cs4home_hri_challenge hri_challenge.launch.py
 ~~~
+
+## Acknowledgement
+
+<img src="https://github.com/user-attachments/assets/b11da974-9201-4f79-902e-c9c20e8aa7a4" alt="Funded by the European Union" width="240"/>
+
+This work has received funding from the European Union's Horizon Europe research and innovation programme under grant agreement No 101070254 ([CORESENSE](https://coresense.eu)). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Commission. Neither the European Union nor the granting authority can be held responsible for them.
