@@ -71,12 +71,26 @@ rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typ
 add_library(hri_execute_bt SHARED
   src/ExecuteBT.cpp
 )
+target_include_directories(hri_execute_bt PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 ament_target_dependencies(hri_execute_bt ${dependencies})
 
 add_library(hri_transition_output SHARED
 src/TransitionOutput.cpp
 )
 ament_target_dependencies(hri_transition_output ${dependencies})
+
+add_library(runtime_trace_bt_node SHARED
+  src/RuntimeTraceBTNode.cpp
+)
+target_compile_definitions(runtime_trace_bt_node PRIVATE BT_PLUGIN_EXPORT)
+target_include_directories(runtime_trace_bt_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(runtime_trace_bt_node ${dependencies})
 
 add_library(hri_challenge_monitor_panel SHARED
   include/cs4home_hri_challenge/HRIChallengeMonitorPanel.hpp
@@ -100,11 +114,19 @@ pluginlib_export_plugin_description_file(rviz_common rviz_plugin_description.xml
 add_executable(hri_challenge_master
   src/HRIChallengeMaster.cpp
 )
+target_include_directories(hri_challenge_master PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 ament_target_dependencies(hri_challenge_master ${dependencies})
 target_link_libraries(hri_challenge_master "${cpp_typesupport_target}")
 
 add_executable(hri_challenge_bt
   src/HRIChallengeBTMain.cpp
+)
+target_include_directories(hri_challenge_bt PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 ament_target_dependencies(hri_challenge_bt ${dependencies})
 
@@ -147,6 +169,7 @@ ament_target_dependencies(recovery_cognitive_module ${dependencies})
 install(TARGETS
   hri_execute_bt
   hri_transition_output
+  runtime_trace_bt_node
   hri_challenge_monitor_panel
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -174,7 +197,15 @@ install(DIRECTORY
   launch
   bt_xml
   config
+  data
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(PROGRAMS
+  scripts/generate_runtime_instrumented_bts.py
+  scripts/aggregate_runtime_overhead.py
+  scripts/run_runtime_overhead_experiment.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(FILES rviz_plugin_description.xml

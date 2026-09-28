@@ -14,6 +14,8 @@
 
 #include "cs4home_core/Core.hpp"
 #include "cs4home_core/macros.hpp"
+#include "cs4home_hri_challenge/RuntimeTrace.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -68,6 +70,11 @@ public:
     if (!parent_->get_parameter("plugin_list", plugin_list)) {
       RCLCPP_ERROR(parent_->get_logger(), "Missing required parameter: plugin_list");
       return false;
+    }
+    if (std::find(plugin_list.begin(), plugin_list.end(), "runtime_trace_bt_node") ==
+      plugin_list.end())
+    {
+      plugin_list.push_back("runtime_trace_bt_node");
     }
 
     if (!parent_->get_parameter("bt_name", bt_name_) || bt_name_.empty()) {
@@ -240,11 +247,23 @@ private:
     rclcpp::Rate rate(30);
     bool finish = false;
     auto final_status = BT::NodeStatus::RUNNING;
+    std::string final_details;
 
     while (!stop_requested_.load() && !finish && rclcpp::ok()) {
-      auto status = tree_.rootNode()->executeTick();
+      auto status = BT::NodeStatus::FAILURE;
+      try {
+        status = tree_.rootNode()->executeTick();
+      } catch (const std::exception & e) {
+        RCLCPP_ERROR(parent_->get_logger(), "Behavior Tree tick failed: %s", e.what());
+        final_details = e.what();
+        finish = true;
+      } catch (...) {
+        RCLCPP_ERROR(parent_->get_logger(), "Behavior Tree tick failed with an unknown exception");
+        final_details = "unknown exception";
+        finish = true;
+      }
       final_status = status;
-      finish = status != BT::NodeStatus::RUNNING;
+      finish = finish || status != BT::NodeStatus::RUNNING;
 
       auto kv_msg = std::make_shared<diagnostic_msgs::msg::KeyValue>();
       kv_msg->key = getActiveNodeName();
@@ -259,8 +278,19 @@ private:
       return;
     }
 
+    const bool success = final_status == BT::NodeStatus::SUCCESS;
+    cs4home_hri_challenge::RuntimeTrace::record(
+      cs4home_hri_challenge::RuntimeTrace::architecture_from_env("modular"),
+      "",
+      cs4home_hri_challenge::RuntimeTrace::capability_from_module(parent_->get_name()),
+      parent_->get_name(),
+      "capability_finished",
+      parent_->now(),
+      success ? "true" : "false",
+      final_details.empty() ? BT::toStr(final_status, true) : final_details);
+
     auto msg = std::make_shared<std_msgs::msg::Bool>();
-    msg->data = final_status == BT::NodeStatus::SUCCESS;
+    msg->data = success;
     efferent_->publish(0, msg);
 
 

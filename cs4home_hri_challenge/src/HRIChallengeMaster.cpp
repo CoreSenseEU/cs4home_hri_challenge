@@ -16,6 +16,7 @@
 
 #include "cs4home_core/Master.hpp"
 #include "cs4home_core/Flow.hpp"
+#include "cs4home_hri_challenge/RuntimeTrace.hpp"
 #include "cs4home_hri_challenge/msg/module_transition_event.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
@@ -196,6 +197,23 @@ private:
   std::map<std::string, bool> module_was_active_;
   std::map<std::string, std::chrono::steady_clock::time_point> recovery_start_times_;
 
+  void trace_event(
+    const std::string & module_name,
+    const std::string & event,
+    const std::string & success = "",
+    const std::string & details = "")
+  {
+    cs4home_hri_challenge::RuntimeTrace::record(
+      cs4home_hri_challenge::RuntimeTrace::architecture_from_env("modular"),
+      active_flow_,
+      cs4home_hri_challenge::RuntimeTrace::capability_from_module(module_name),
+      module_name,
+      event,
+      this->now(),
+      success,
+      details);
+  }
+
   void parse_flow_configuration()
   {
     RCLCPP_INFO(this->get_logger(), "Parsing flow configuration...");
@@ -306,6 +324,7 @@ private:
     }
 
     active_module_ = module_name;
+    trace_event(module_name, "capability_decision");
     activate_module(module_name);
   }
 
@@ -349,6 +368,7 @@ private:
       get_logger(),
       "Active module %s is not active. Current lifecycle state: %s",
       active_module_.c_str(), state.c_str());
+    trace_event(active_module_, "failure_detected", "false", state);
     recover_active_module(state, count_new_failure);
   }
 
@@ -420,6 +440,7 @@ private:
     failed_module_ = failed_module;
     recovery_active_ = true;
     active_module_ = recovery_module_;
+    trace_event(failed_module, "recovery_requested", "", recovery_module_);
 
     RCLCPP_ERROR(
       get_logger(),
@@ -570,6 +591,9 @@ private:
     RCLCPP_INFO(this->get_logger(), "%s module: %s", action_label, module_name.c_str());
 
     const auto start = std::chrono::steady_clock::now();
+    if (transition_id == lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE) {
+      trace_event(module_name, "lifecycle_activation_request");
+    }
     auto future = client->async_send_request(req);
     const auto result = lifecycle_executor_->spin_until_future_complete(future, 5s);
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -739,6 +763,7 @@ private:
       RCLCPP_INFO(
         this->get_logger(), "Module %s is already active, skipping activation",
         module_name.c_str());
+      trace_event(module_name, "lifecycle_activated", "true", "already_active");
       if (module_name == recovery_module_) {
         log_recovery_module_activation_duration_if_needed();
       } else {
@@ -760,6 +785,7 @@ private:
         "Activating",
         "Activated"))
     {
+      trace_event(module_name, "lifecycle_activated", "true");
       module_was_active_[module_name] = true;
       if (module_name == recovery_module_) {
         log_recovery_module_activation_duration_if_needed();
@@ -789,6 +815,7 @@ private:
         "Deactivating",
         "Deactivated"))
     {
+      trace_event(module_name, "lifecycle_deactivated", "true");
       module_was_active_[module_name] = false;
     }
   }
@@ -843,6 +870,7 @@ private:
     RCLCPP_INFO(
       this->get_logger(), "Module '%s' completed with status: %s",
       module_name.c_str(), success ? "SUCCESS" : "FAILURE");
+    trace_event(module_name, "completion_received", success ? "true" : "false");
 
     if (module_name == recovery_module_) {
       handle_recovery_completion(success);
@@ -895,6 +923,7 @@ private:
         this->get_logger(),
         "SUCCESS → Next module in %s: %s",
         active_flow_.c_str(), next_it->c_str());
+      trace_event(module_name, "transition_to_next", "true", *next_it);
       start_module(*next_it);
       return;
     }
@@ -922,6 +951,7 @@ private:
       this->get_logger(),
       "Recovery completed with decision: %s",
       continue_to_next_task ? "CONTINUE" : "STOP");
+    trace_event(recovery_module_, "recovery_completion", continue_to_next_task ? "true" : "false");
 
     deactivate_module(recovery_module_);
     recovery_active_ = false;

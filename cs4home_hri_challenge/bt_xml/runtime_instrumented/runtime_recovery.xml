@@ -1,0 +1,10 @@
+<root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Recovery" architecture="modular" />
+            <Action ID="Speak" say_text="I am unable to complete the current task. Do you want me to proceed to the next task? Please say yes or no." />
+            <Action ID="DialogConfirmation" />
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Recovery" architecture="modular" />
+        </Sequence>
+    </BehaviorTree>
+</root>

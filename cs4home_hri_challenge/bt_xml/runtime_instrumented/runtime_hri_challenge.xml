@@ -1,0 +1,873 @@
+<root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Fallback>
+                <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873" />
+                <AlwaysSuccess />
+            </Fallback>
+            <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="18000">
+                        <ReactiveFallback>
+                            <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" best_detection="{best_detection}" />
+                            <Action ID="Pan" period="20.0" range="45" pitch_angle="-5" />
+                        </ReactiveFallback>
+                    </Timeout>
+                    <Inverter>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <Action ID="Speak" say_text="Could you please come closer?" />
+                        </Sequence>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure />
+                    </Delay>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Timeout msec="3000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Delay delay_msec="300">
+                            <AlwaysSuccess />
+                        </Delay>
+                        <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" best_detection="{best_detection}" />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Timeout>
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}" />
+            <Switch2 variable="{n}" case_1="0" case_2="1">
+                <Sequence>
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <Fallback>
+                            <Timeout msec="10000">
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <ReactiveFallback>
+                                        <Action ID="EnableDetectByIdentity" enable="true" />
+                                        <Sequence>
+                                            <Action ID="StoreIdentityVector" identity="guestone" />
+                                            <Delay delay_msec="500">
+                                                <AlwaysFailure />
+                                            </Delay>
+                                        </Sequence>
+                                    </ReactiveFallback>
+                                </RetryUntilSuccessful>
+                            </Timeout>
+                            <Inverter>
+                                <Action ID="Speak" say_text="I'm having trouble recognizing you, could you please come closer and look at me?" />
+                            </Inverter>
+                            <Delay delay_msec="3000">
+                                <AlwaysFailure />
+                            </Delay>
+                        </Fallback>
+                    </RetryUntilSuccessful>
+                    <SetBlackboard output_key="guestid" value="guestone" />
+                </Sequence>
+                <Sequence>
+                    <Action ID="EnableDetectByIdentity" enable="true" />
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <ReactiveFallback>
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="guesttwo" />
+                            <Sequence>
+                                <Action ID="StoreIdentityVector" identity="guesttwo" />
+                                <Delay delay_msec="500">
+                                    <AlwaysFailure />
+                                </Delay>
+                            </Sequence>
+                        </ReactiveFallback>
+                    </RetryUntilSuccessful>
+                    <SetBlackboard output_key="guestid" value="guesttwo" />
+                </Sequence>
+                <Sequence>
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <Fallback>
+                            <Action ID="StoreIdentityVector" identity="default" />
+                            <Delay delay_msec="500">
+                                <AlwaysFailure />
+                            </Delay>
+                        </Fallback>
+                    </RetryUntilSuccessful>
+                    <Action ID="EnableDetectByIdentity" enable="true" />
+                    <SetBlackboard output_key="guestid" value="default" />
+                </Sequence>
+            </Switch2>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="3000">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Fallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                <Inverter>
+                                    <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                </Inverter>
+                            </Fallback>
+                        </RetryUntilSuccessful>
+                    </Timeout>
+                    <Inverter>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <Action ID="Speak" say_text="I think I lost your face would you look at me in the eye or come closer?" />
+                        </Sequence>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure />
+                    </Delay>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <SequenceStar>
+                    <Sequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Speak" say_text="What's your name?" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Listen" listen_text="{text_value}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Query" text="{text_value}" intention="name" intention_value="{name_value}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Speak" say_text="So you are" param="{name_value}" />
+                            <Action ID="Speak" say_text="Please say yes or no" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="DialogConfirmation" />
+                        </ReactiveSequence>
+                    </Sequence>
+                    <Sequence>
+                        <Action ID="Speak" say_text="What's your favorite drink?" />
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Listen" listen_text="{text_value2}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Query" text="{text_value2}" intention="drink" intention_value="{drink_value}" />
+                        </ReactiveSequence>
+                        <Action ID="Speak" say_text="So it seems you like " param="{drink_value}" />
+                        <Action ID="Speak" say_text="Please say yes or no" />
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="DialogConfirmation" />
+                        </ReactiveSequence>
+                    </Sequence>
+                </SequenceStar>
+            </RetryUntilSuccessful>
+            <Action ID="Speak" say_text="ok, good!" />
+            <Action ID="CheckPolicy" question="&lt;__media__&gt;                                                     Start the answer with: 'the guest is'.                                                     Describe the person in one single short natural sentence using only plain text.                                                      Always include:                                                     - hair style or hair length,                                                     - whether the person wears glasses or not,                                                     - clothing color,                                                     - and one more visible detail such as accessory, or clothing type.                                                      Strict rules:                                                     - Output exactly one brief sentence.                                                     - Output plain text only.                                                     - Do not output JSON.                                                     - Do not output bullet points.                                                     - Do not output lists.                                                      Return only the final sentence." output_text="{description}" image_topic="/all_perceptions" />
+            <Action ID="Speak" say_text="So, " param="{description}" />
+            <Fallback>
+                <Action ID="StoreGuestInfo" guest_name="{name_value}" guest_description="{description}" guest_drink="{drink_value}" />
+                <Sequence>
+                    <Action ID="RemoveGuestFacts" guest_id="{guest_attending}" />
+                    <Action ID="StoreGuestInfo" guest_name="{name_value}" guest_description="Friendly and sharp" guest_drink="{drink_value}" />
+                </Sequence>
+            </Fallback>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party, please stay behind me" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="SetTorsoHeight" height="0.3" />
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party" />
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}" />
+                    <Action ID="Speak" say_text="{explain_text}" />
+                </Sequence>
+            </Fallback>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="true" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="20000">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <ReactiveFallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" target_identity="guestone" confidence="0.6" interest="person" max_depth="4.50" max_entities="1" order="depth_nearest" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10" />
+                            </ReactiveFallback>
+                        </RetryUntilSuccessful>
+                    </Timeout>
+                    <Sequence>
+                        <Action ID="EnableDetectByIdentity" enable="false" />
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <ReactiveFallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" max_depth="4.50" max_entities="1" order="depth_nearest" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10" />
+                            </ReactiveFallback>
+                        </RetryUntilSuccessful>
+                    </Sequence>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Fallback>
+                <Action ID="GetGuestInfo" guest_attending_id="{guest_attending}" guest_name="{guest_name2}" guest_drink="{guest_drink2}" guest_description="{guest_description2}" />
+                <Sequence>
+                    <Action ID="SetBlackboard" output_key="guest_name2" value="new guest" />
+                    <Action ID="SetBlackboard" output_key="guest_drink2" value="water" />
+                    <Action ID="SetBlackboard" output_key="guest_description2" value="good looking guest" />
+                </Sequence>
+            </Fallback>
+            <Action ID="GetGuestInfo" guest_attending_id="guest1" guest_name="{guest_name1}" guest_drink="{guest_drink1}" guest_description="{guest_description1}" />
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="Speak" say_text="Hi" param="{guest_name1}" />
+            <Action ID="Speak" say_text=" this is" param="{guest_name2}" />
+            <Action ID="Speak" say_text=" " param="{guest_description2}" />
+            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <ReactiveFallback>
+                <Condition ID="IsDetected" confidence="0.5" interest="person" max_depth="1.0" max_entities="2" order="depth_nearest" best_detection="{best_detection}" />
+                <Action ID="MoveAlongAxis" speed="0.3" distance="6.28" axis="z" />
+            </ReactiveFallback>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="Speak" say_text=" By the way" param="{guest_name2}" />
+            <Action ID="Speak" say_text="our guest" param="{guest_name1}" />
+            <Action ID="Speak" say_text="enjoys" param="{guest_drink1}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="Speak" say_text="come here" />
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}" />
+            <Action ID="RuntimeTrace" event="capability_executable" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Find Seat" architecture="monolithic" />
+            <Action ID="Speak" say_text="I'll find you a seat" />
+            <Sequence>
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="30000">
+                            <ReactiveFallback>
+                                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5" />
+                            </ReactiveFallback>
+                        </Timeout>
+                        <Sequence>
+                            <Action ID="Explain" question="IsSittable" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <AlwaysFailure />
+                        </Sequence>
+                    </Fallback>
+                </RetryUntilSuccessful>
+                <Action ID="LookAt" tf_frame="{chair_frame}" />
+                <Action ID="PointAt" tf_frame="{chair_frame}" base_frame="base_link" low_z="0.6" high_z="0.9" />
+                <Action ID="Speak" say_text="Please, sit over there" />
+                <Delay delay_msec="500">
+                    <Action ID="PlayMotionPredefined" motion_name="home" />
+                </Delay>
+                <Action ID="LookAt" tf_frame="{attention_home}" />
+            </Sequence>
+            <Action ID="SetTorsoHeight" height="0.3" />
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="capability_finished" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="transition_to_next" capability="Find Seat" architecture="monolithic" />
+            <Action ID="Speak" say_text="I will go back to the door to receive the next guest" />
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="entrance" />
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}" />
+                    <Action ID="Speak" say_text="{explain_text}" />
+                </Sequence>
+            </Fallback>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Fallback>
+                <Action ID="SetHeadJointPosition" horizontal="0.0" vertical="0.0873" />
+                <AlwaysSuccess />
+            </Fallback>
+            <Action ID="Speak" say_text="I'm ready to receive a new guest, going to the door" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="18000">
+                        <ReactiveFallback>
+                            <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" best_detection="{best_detection}" />
+                            <Action ID="Pan" period="20.0" range="45" pitch_angle="-5" />
+                        </ReactiveFallback>
+                    </Timeout>
+                    <Inverter>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <Action ID="Speak" say_text="Could you please come closer?" />
+                        </Sequence>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure />
+                    </Delay>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Timeout msec="3000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Delay delay_msec="300">
+                            <AlwaysSuccess />
+                        </Delay>
+                        <Condition ID="IsDetected" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" best_detection="{best_detection}" />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Timeout>
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}" />
+            <Switch2 variable="{n}" case_1="0" case_2="1">
+                <Sequence>
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <Fallback>
+                            <Timeout msec="10000">
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <ReactiveFallback>
+                                        <Action ID="EnableDetectByIdentity" enable="true" />
+                                        <Sequence>
+                                            <Action ID="StoreIdentityVector" identity="guestone" />
+                                            <Delay delay_msec="500">
+                                                <AlwaysFailure />
+                                            </Delay>
+                                        </Sequence>
+                                    </ReactiveFallback>
+                                </RetryUntilSuccessful>
+                            </Timeout>
+                            <Inverter>
+                                <Action ID="Speak" say_text="I'm having trouble recognizing you, could you please come closer and look at me?" />
+                            </Inverter>
+                            <Delay delay_msec="3000">
+                                <AlwaysFailure />
+                            </Delay>
+                        </Fallback>
+                    </RetryUntilSuccessful>
+                    <SetBlackboard output_key="guestid" value="guestone" />
+                </Sequence>
+                <Sequence>
+                    <Action ID="EnableDetectByIdentity" enable="true" />
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <ReactiveFallback>
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="guesttwo" />
+                            <Sequence>
+                                <Action ID="StoreIdentityVector" identity="guesttwo" />
+                                <Delay delay_msec="500">
+                                    <AlwaysFailure />
+                                </Delay>
+                            </Sequence>
+                        </ReactiveFallback>
+                    </RetryUntilSuccessful>
+                    <SetBlackboard output_key="guestid" value="guesttwo" />
+                </Sequence>
+                <Sequence>
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <Fallback>
+                            <Action ID="StoreIdentityVector" identity="default" />
+                            <Delay delay_msec="500">
+                                <AlwaysFailure />
+                            </Delay>
+                        </Fallback>
+                    </RetryUntilSuccessful>
+                    <Action ID="EnableDetectByIdentity" enable="true" />
+                    <SetBlackboard output_key="guestid" value="default" />
+                </Sequence>
+            </Switch2>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="3000">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Fallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                <Inverter>
+                                    <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                </Inverter>
+                            </Fallback>
+                        </RetryUntilSuccessful>
+                    </Timeout>
+                    <Inverter>
+                        <Sequence>
+                            <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <Action ID="Speak" say_text="I think I lost your face would you look at me in the eye or come closer?" />
+                        </Sequence>
+                    </Inverter>
+                    <Delay delay_msec="3000">
+                        <AlwaysFailure />
+                    </Delay>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <SequenceStar>
+                    <Sequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Speak" say_text="What's your name?" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Listen" listen_text="{text_value}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Query" text="{text_value}" intention="name" intention_value="{name_value}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Speak" say_text="So you are" param="{name_value}" />
+                            <Action ID="Speak" say_text="Please say yes or no" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="DialogConfirmation" />
+                        </ReactiveSequence>
+                    </Sequence>
+                    <Sequence>
+                        <Action ID="Speak" say_text="What's your favorite drink?" />
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Listen" listen_text="{text_value2}" />
+                        </ReactiveSequence>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="Query" text="{text_value2}" intention="drink" intention_value="{drink_value}" />
+                        </ReactiveSequence>
+                        <Action ID="Speak" say_text="So it seems you like " param="{drink_value}" />
+                        <Action ID="Speak" say_text="Please say yes or no" />
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Fallback>
+                                    <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="2" max_entities="1" order="depth_nearest" target_identity="{guestid}" />
+                                    <Inverter>
+                                        <Action ID="StoreIdentityVector" identity="{guestid}" />
+                                    </Inverter>
+                                </Fallback>
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection}" />
+                            <Action ID="DialogConfirmation" />
+                        </ReactiveSequence>
+                    </Sequence>
+                </SequenceStar>
+            </RetryUntilSuccessful>
+            <Action ID="Speak" say_text="ok, good!" />
+            <Action ID="CheckPolicy" question="&lt;__media__&gt;                                                     Start the answer with: 'the guest is'.                                                     Describe the person in one single short natural sentence using only plain text.                                                      Always include:                                                     - hair style or hair length,                                                     - whether the person wears glasses or not,                                                     - clothing color,                                                     - and one more visible detail such as accessory, or clothing type.                                                      Strict rules:                                                     - Output exactly one brief sentence.                                                     - Output plain text only.                                                     - Do not output JSON.                                                     - Do not output bullet points.                                                     - Do not output lists.                                                      Return only the final sentence." output_text="{description}" image_topic="/all_perceptions" />
+            <Action ID="Speak" say_text="So, " param="{description}" />
+            <Fallback>
+                <Action ID="StoreGuestInfo" guest_name="{name_value}" guest_description="{description}" guest_drink="{drink_value}" />
+                <Sequence>
+                    <Action ID="RemoveGuestFacts" guest_id="{guest_attending}" />
+                    <Action ID="StoreGuestInfo" guest_name="{name_value}" guest_description="Friendly and sharp" guest_drink="{drink_value}" />
+                </Sequence>
+            </Fallback>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="So the host" />
+                    </ReactiveSequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="told me you have something for me" />
+                    </ReactiveSequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="Please show it to me" />
+                    </ReactiveSequence>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <Action ID="RuntimeTrace" event="capability_executable" capability="Grab Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Grab Bag" architecture="monolithic" />
+            <Action ID="GetModelPath" model="best26.pt" model_path="{bags_model_path}" />
+            <Action ID="SwitchYoloModel" model="{bags_model_path}" />
+            <Action ID="PlayMotionPredefined" motion_name="open" />
+            <Delay delay_msec="2000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="4000">
+                            <Sequence>
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <Condition ID="IsDetected" confidence="0.4" interest="bag" max_depth="3" max_entities="4" order="depth_nearest" />
+                                </RetryUntilSuccessful>
+                                <Action ID="ExtractHandoverAlignment" interest_class="bag" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}" />
+                            </Sequence>
+                        </Timeout>
+                        <Inverter>
+                            <Sequence>
+                                <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                                <Action ID="Speak" say_text="{explain_text}" />
+                                <Action ID="Speak" say_text="I can't see the bag, could you please show it to me?" />
+                            </Sequence>
+                        </Inverter>
+                        <Delay delay_msec="3000">
+                            <AlwaysFailure />
+                        </Delay>
+                    </Fallback>
+                </RetryUntilSuccessful>
+            </Delay>
+            <Action ID="Speak" say_text="Now, for safety, I will approach the bag but you will have to help me to complete the handover" />
+            <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x" />
+            <Action ID="SetTorsoHeight" height="{torso_z_movement}" />
+            <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name="" />
+            <Action ID="Speak" say_text="You can now leave me the bag" />
+            <ForceSuccess>
+                <Delay delay_msec="2000">
+                    <Action ID="PlayMotionPredefined" motion_name="close" />
+                </Delay>
+            </ForceSuccess>
+            <Action ID="Speak" say_text="Thanks! securing the bag!" />
+            <Delay delay_msec="2000">
+                <Action ID="PlayMotionPredefined" motion_name="home" />
+            </Delay>
+            <Action ID="Speak" say_text="Bag secured!" />
+            <Action ID="SwitchYoloModel" model="yolo11n.pt" />
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Grab Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="capability_finished" capability="Grab Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="transition_to_next" capability="Grab Bag" architecture="monolithic" />
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party, please stay behind me" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="SetTorsoHeight" height="0.3" />
+            <Fallback>
+                <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="party" />
+                <Sequence>
+                    <Action ID="Explain" question="MoveTo" auto_triggered="true" explanation="{explain_text}" />
+                    <Action ID="Speak" say_text="{explain_text}" />
+                </Sequence>
+            </Fallback>
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="Speak" say_text="Please follow me, i will get you to the  party" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="true" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <Timeout msec="20000">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <ReactiveFallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" target_identity="guestone" confidence="0.6" interest="person" max_depth="4.50" max_entities="1" order="depth_nearest" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10" />
+                            </ReactiveFallback>
+                        </RetryUntilSuccessful>
+                    </Timeout>
+                    <Sequence>
+                        <Action ID="EnableDetectByIdentity" enable="false" />
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <ReactiveFallback>
+                                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" max_depth="4.50" max_entities="1" order="depth_nearest" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="10" />
+                            </ReactiveFallback>
+                        </RetryUntilSuccessful>
+                    </Sequence>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Fallback>
+                <Action ID="GetGuestInfo" guest_attending_id="{guest_attending}" guest_name="{guest_name2}" guest_drink="{guest_drink2}" guest_description="{guest_description2}" />
+                <Sequence>
+                    <Action ID="SetBlackboard" output_key="guest_name2" value="new guest" />
+                    <Action ID="SetBlackboard" output_key="guest_drink2" value="water" />
+                    <Action ID="SetBlackboard" output_key="guest_description2" value="good looking guest" />
+                </Sequence>
+            </Fallback>
+            <Action ID="GetGuestInfo" guest_attending_id="guest1" guest_name="{guest_name1}" guest_drink="{guest_drink1}" guest_description="{guest_description1}" />
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="Speak" say_text="Hi" param="{guest_name1}" />
+            <Action ID="Speak" say_text=" this is" param="{guest_name2}" />
+            <Action ID="Speak" say_text=" " param="{guest_description2}" />
+            <Action ID="Speak" say_text=" and their favorite drink is" param="{guest_drink2}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <ReactiveFallback>
+                <Condition ID="IsDetected" confidence="0.5" interest="person" max_depth="1.0" max_entities="2" order="depth_nearest" best_detection="{best_detection}" />
+                <Action ID="MoveAlongAxis" speed="0.3" distance="6.28" axis="z" />
+            </ReactiveFallback>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <Action ID="Speak" say_text=" By the way" param="{guest_name2}" />
+            <Action ID="Speak" say_text="our guest" param="{guest_name1}" />
+            <Action ID="Speak" say_text="enjoys" param="{guest_drink1}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="Speak" say_text="come here" />
+            <Action ID="GetAttendedGuest" guest_attended="{guest_attending}" />
+            <Action ID="RemoveStringPrefix" string_to_remove="{guest_attending}" prefix="guest" result="{n}" />
+            <Action ID="RuntimeTrace" event="capability_executable" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Find Seat" architecture="monolithic" />
+            <Action ID="Speak" say_text="I'll find you a seat" />
+            <Sequence>
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="30000">
+                            <ReactiveFallback>
+                                <Condition ID="IsSittable" cam_frame="{cam_frame}" chair_frame="{chair_frame}" />
+                                <Action ID="Pan" period="20.0" range="45" pitch_angle="-5" />
+                            </ReactiveFallback>
+                        </Timeout>
+                        <Sequence>
+                            <Action ID="Explain" question="IsSittable" auto_triggered="true" explanation="{explain_text}" />
+                            <Action ID="Speak" say_text="{explain_text}" />
+                            <AlwaysFailure />
+                        </Sequence>
+                    </Fallback>
+                </RetryUntilSuccessful>
+                <Action ID="LookAt" tf_frame="{chair_frame}" />
+                <Action ID="PointAt" tf_frame="{chair_frame}" base_frame="base_link" low_z="0.6" high_z="0.9" />
+                <Action ID="Speak" say_text="Please, sit over there" />
+                <Delay delay_msec="500">
+                    <Action ID="PlayMotionPredefined" motion_name="home" />
+                </Delay>
+                <Action ID="LookAt" tf_frame="{attention_home}" />
+            </Sequence>
+            <Action ID="SetTorsoHeight" height="0.3" />
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="capability_finished" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="transition_to_next" capability="Find Seat" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="capability_executable" capability="Transport Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Transport Bag" architecture="monolithic" />
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" follow_ready_wp="{follow_ready}" />
+            <Action ID="LookAt" tf_frame="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <Action ID="Speak" param="{h_name}" say_text="Heey " />
+            <Action ID="Speak" param="" say_text="I have something for you, can you come here please?" />
+            <Action ID="MoveTo" is_truncated="false" distance_tolerance="0" tf_frame="{follow_ready}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" confidence="0.6" interest="person" max_depth="3.0" max_entities="2" order="depth" best_detection="{best_detection_global}" />
+            </RetryUntilSuccessful>
+            <Action ID="Speak" param="{h_name}" say_text="Hi " />
+            <Action ID="Speak" param="" say_text="Where do you want to drop the bag?" />
+            <Action ID="Speak" param="" say_text="I will follow you. Please stop at the end " />
+            <Action ID="RemoveStringPrefix" string_to_remove="{best_detection_global}" prefix="person_" result="{id}" />
+            <Action ID="SetPersistentId" id="{id}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Fallback>
+                        <ReactiveSequence>
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Condition ID="IsDetected" confidence="0.6" interest="person" max_depth="3.0" max_entities="2" order="depth" />
+                            </RetryUntilSuccessful>
+                            <Action ID="LookAt" tf_frame="{best_detection_global}" />
+                            <Condition ID="IsEntityMoving" distance_tolerance="0.6" robot_distance_to_person="1.5" frame="{best_detection_global}" check_time="8.0" />
+                            <Action ID="FollowEntity" camera_frame="head_front_camera_optical_frame" distance_tolerance="0.2" frame_to_follow="{best_detection_global}" x_axis_max="20.0" x_axis_min="-20.0" y_axis_max="20.0" y_axis_min="-20.0" />
+                        </ReactiveSequence>
+                        <Action ID="Speak" param="" say_text="have we arrived to the destination?" />
+                    </Fallback>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" confidence="0.3" interest="person" max_depth="2.5" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection_global}" />
+                        <ForceSuccess>
+                            <Action ID="GoalPublisher" camera_frame="head_front_camera_optical_frame" distance_tolerance="0.2" frame_to_follow="{best_detection_global}" />
+                        </ForceSuccess>
+                        <Action ID="DialogConfirmation" />
+                    </ReactiveSequence>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <Action ID="Speak" param="" say_text="I will leave the bag here." />
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="offer" />
+            </Delay>
+            <Action ID="Speak" param="" say_text="Please take the bag" />
+            <Delay delay_msec="1000">
+                <Action ID="PlayMotionPredefined" motion_name="open" />
+            </Delay>
+            <Action ID="Speak" param="" say_text="Thank you" />
+            <Delay delay_msec="500">
+                <Action ID="PlayMotionPredefined" motion_name="home" />
+            </Delay>
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Transport Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="capability_finished" capability="Transport Bag" architecture="monolithic" />
+            <Action ID="RuntimeTrace" event="transition_to_next" capability="Transport Bag" architecture="monolithic" />
+        </Sequence>
+    </BehaviorTree>
+</root>

@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -61,7 +62,8 @@ int main(int argc, char ** argv)
     "follow_entity_bt_node",
     "goal_publisher_bt_node",
     "add_string_suffix_bt_node",
-    "set_persistent_id_bt_node"};
+    "set_persistent_id_bt_node",
+    "runtime_trace_bt_node"};
 
   if (!node->has_parameter("bt_xml_file")) {
     node->declare_parameter("bt_xml_file", "hri_challenge.xml");
@@ -92,6 +94,9 @@ int main(int argc, char ** argv)
   std::vector<std::string> plugins;
   node->get_parameter("bt_xml_file", bt_xml_file);
   node->get_parameter("plugins", plugins);
+  if (std::find(plugins.begin(), plugins.end(), "runtime_trace_bt_node") == plugins.end()) {
+    plugins.push_back("runtime_trace_bt_node");
+  }
 
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
@@ -117,7 +122,15 @@ int main(int argc, char ** argv)
   auto status = BT::NodeStatus::RUNNING;
 
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    status = tree.rootNode()->executeTick();
+    try {
+      status = tree.rootNode()->executeTick();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(node->get_logger(), "Behavior Tree tick failed: %s", e.what());
+      status = BT::NodeStatus::FAILURE;
+    } catch (...) {
+      RCLCPP_ERROR(node->get_logger(), "Behavior Tree tick failed with an unknown exception");
+      status = BT::NodeStatus::FAILURE;
+    }
     rclcpp::spin_some(node->get_node_base_interface());
     rate.sleep();
   }

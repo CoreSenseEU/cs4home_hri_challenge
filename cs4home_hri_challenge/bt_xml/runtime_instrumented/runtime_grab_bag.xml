@@ -1,0 +1,82 @@
+<root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="RuntimeTrace" event="first_bt_action_start" capability="Grab Bag" architecture="modular" />
+            <Action ID="InitReceptionist" cam_frame="{cam_frame}" manipulation_frame="{man_frame}" host_name="{h_name}" host_drink="{h_drink}" current_guest="{n}" attention_home="{attention_home}" />
+            <Action ID="EnableDetectByIdentity" enable="false" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+            </RetryUntilSuccessful>
+            <Action ID="LookAt" tf_frame="{best_detection}" />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="So the host" />
+                    </ReactiveSequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="told me you have something for me" />
+                    </ReactiveSequence>
+                    <ReactiveSequence>
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Condition ID="IsDetected" best_detection="{best_detection}" confidence="0.6" interest="person" frames="" max_depth="3" max_entities="1" order="depth_nearest" />
+                        </RetryUntilSuccessful>
+                        <Action ID="LookAt" tf_frame="{best_detection}" />
+                        <Action ID="Speak" say_text="Please show it to me" />
+                    </ReactiveSequence>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <Action ID="GetModelPath" model="best26.pt" model_path="{bags_model_path}" />
+            <Action ID="SwitchYoloModel" model="{bags_model_path}" />
+            <Action ID="PlayMotionPredefined" motion_name="open" />
+            <Delay delay_msec="2000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Fallback>
+                        <Timeout msec="4000">
+                            <Sequence>
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <Condition ID="IsDetected" confidence="0.4" interest="bag" max_depth="3" max_entities="4" order="depth_nearest" />
+                                </RetryUntilSuccessful>
+                                <Action ID="ExtractHandoverAlignment" interest_class="bag" base_x_movement="{base_x_movement}" torso_z_movement="{torso_z_movement}" />
+                            </Sequence>
+                        </Timeout>
+                        <Inverter>
+                            <Sequence>
+                                <Action ID="Explain" question="IsDetected" auto_triggered="true" explanation="{explain_text}" />
+                                <Action ID="Speak" say_text="{explain_text}" />
+                                <Action ID="Speak" say_text="I can't see the bag, could you please show it to me?" />
+                            </Sequence>
+                        </Inverter>
+                        <Delay delay_msec="3000">
+                            <AlwaysFailure />
+                        </Delay>
+                    </Fallback>
+                </RetryUntilSuccessful>
+            </Delay>
+            <Action ID="Speak" say_text="Now, for safety, I will approach the bag but you will have to help me to complete the handover" />
+            <Action ID="MoveAlongAxis" distance="{base_x_movement}" speed="0.15" axis="x" />
+            <Action ID="SetTorsoHeight" height="{torso_z_movement}" />
+            <Action ID="MoveJoint" joint_name="arm_3_joint" joint_value="-2.11184839" group_name="" />
+            <Action ID="Speak" say_text="You can now leave me the bag" />
+            <ForceSuccess>
+                <Delay delay_msec="2000">
+                    <Action ID="PlayMotionPredefined" motion_name="close" />
+                </Delay>
+            </ForceSuccess>
+            <Action ID="Speak" say_text="Thanks! securing the bag!" />
+            <Delay delay_msec="2000">
+                <Action ID="PlayMotionPredefined" motion_name="home" />
+            </Delay>
+            <Action ID="Speak" say_text="Bag secured!" />
+            <Action ID="SwitchYoloModel" model="yolo11n.pt" />
+            <Action ID="RuntimeTrace" event="last_bt_action_finish" capability="Grab Bag" architecture="modular" />
+        </Sequence>
+    </BehaviorTree>
+</root>

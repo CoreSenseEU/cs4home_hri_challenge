@@ -1,0 +1,7 @@
+capability,interval,n_bt,n_modular,median_bt_ms,median_modular_ms,u_bt,p,p_holm,cliffs_delta_modular_minus_bt,effect_size_interpretation
+Greeting,pre-execution,10,10,5333.095075,4453.017626,61.0,0.427355314,1.000000000,-0.220,small
+Greeting,execution,10,10,36599.492570,38338.833928,42.0,0.570750388,1.000000000,0.160,small
+Greeting,end-to-end,10,10,42275.522848,43411.201915,45.0,0.733729996,1.000000000,0.100,negligible
+GrabBag,pre-execution,10,10,5857.025347,4546.675092,91.0,0.002202220,0.013213320,-0.820,large
+GrabBag,execution,10,10,56022.678665,45650.609645,75.0,0.064022101,0.320110506,-0.500,large
+GrabBag,end-to-end,10,10,62294.138349,50744.078204,75.0,0.064022101,0.320110506,-0.500,large

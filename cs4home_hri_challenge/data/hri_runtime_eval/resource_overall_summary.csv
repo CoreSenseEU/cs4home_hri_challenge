@@ -1,0 +1,17 @@
+architecture,capability,metric,count,mean,peak
+bt,grab_bag,cpu_percent,10,11.685294723419373,74.52790600083927
+bt,grab_bag,rss_mb,10,218.37141854988027,243.53515625
+bt,grab_bag,thread_count,10,20.03329208782494,21.0
+bt,grab_bag,ros2_process_count,10,1.9819646173781738,2.0
+bt,greeting,cpu_percent,10,8.19165225197342,45.733222866611435
+bt,greeting,rss_mb,10,216.49176630738404,231.87109375
+bt,greeting,thread_count,10,23.988566017618034,26.0
+bt,greeting,ros2_process_count,10,1.9779502888137146,2.0
+modular,grab_bag,cpu_percent,10,18.432728471906834,86.74698795180723
+modular,grab_bag,rss_mb,10,265.66723629520345,274.66015625
+modular,grab_bag,thread_count,10,35.29261877792568,36.0
+modular,grab_bag,ros2_process_count,10,4.0,4.0
+modular,greeting,cpu_percent,10,9.814910103265332,48.435923309788095
+modular,greeting,rss_mb,10,277.4213660047628,285.8046875
+modular,greeting,thread_count,10,39.6871318936313,41.0
+modular,greeting,ros2_process_count,10,4.0,4.0

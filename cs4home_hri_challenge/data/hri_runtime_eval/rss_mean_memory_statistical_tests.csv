@@ -1,0 +1,3 @@
+capability,bt_mean_rss_mb,modular_mean_rss_mb,absolute_difference_rss_mb,rss_overhead_percent,mann_whitney_u_statistic,raw_p_value,holm_adjusted_p_value,cliffs_delta_modular_vs_bt,effect_interpretation
+Greeting,216.49176630738407,277.4213660047627,60.92959969737865,28.14407251445686,0.0,0.00018267179110955002,0.00036534358221910004,1.0,large; Modular > BT
+GrabBag,218.3714185498803,265.66723629520345,47.29581774532315,21.658428588959254,0.0,0.00018267179110955002,0.00036534358221910004,1.0,large; Modular > BT

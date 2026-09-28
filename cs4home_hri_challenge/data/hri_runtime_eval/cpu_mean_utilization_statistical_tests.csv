@@ -1,0 +1,3 @@
+capability,bt_mean_cpu_percent,modular_mean_cpu_percent,absolute_difference_cpu_percent,cpu_overhead_percent,mann_whitney_u_statistic,raw_p_value,holm_adjusted_p_value,cliffs_delta_modular_vs_bt,effect_interpretation
+Greeting,8.19165225197342,9.814910103265332,1.6232578512919122,19.816000501008322,3.0,0.00043963875262656454,0.0008792775052531291,0.94,large; Modular > BT
+GrabBag,11.685294723419373,18.432728471906838,6.747433748487465,57.74294879327629,6.0,0.0010079762403767444,0.0010079762403767444,0.88,large; Modular > BT
